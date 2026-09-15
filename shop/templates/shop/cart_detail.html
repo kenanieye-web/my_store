@@ -1,0 +1,70 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}سلة التسوق | المتجر الإلكتروني{% endblock %}
+
+{% block extra_css %}
+<style>
+    .qty-btn { width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4 fw-bold"><i class="fa-solid fa-cart-shopping me-2 text-primary"></i> سلة التسوق</h2>
+    
+    {% if cart and cart.items.exists %}
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>المنتج</th>
+                                <th>السعر</th>
+                                <th class="text-center">الكمية</th>
+                                <th>المجموع</th>
+                                <th class="text-center">إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart.items.all %}
+                            <tr>
+                                <td class="fw-bold">{{ item.product.name }}</td>
+                                <td>{{ item.product.price }} $</td>
+                                <td>
+                                    <!-- أزرار زيادة ونقصان الكمية -->
+                                    <form action="{% url 'update_cart_quantity' item.id %}" method="POST" class="d-flex align-items-center justify-content-center gap-2">
+                                        {% csrf_token %}
+                                        <button type="submit" name="action" value="decrease" class="btn btn-outline-secondary btn-sm qty-btn"><i class="fa-solid fa-minus"></i></button>
+                                        <span class="fw-bold px-1">{{ item.quantity }}</span>
+                                        <button type="submit" name="action" value="increase" class="btn btn-outline-secondary btn-sm qty-btn"><i class="fa-solid fa-plus"></i></button>
+                                    </form>
+                                </td>
+                                <td class="fw-bold text-success">{{ item.get_total_price }} $</td>
+                                <td class="text-center">
+                                    <!-- زر الحذف -->
+                                    <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('هل أنت تأكد من حذف هذا المنتج من السلة؟');">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white p-4 d-flex justify-content-between align-items-center">
+                <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">متابعة التسوق</a>
+                <a href="{% url 'checkout' %}" class="btn btn-success btn-lg fw-bold">
+                    إتمام الشراء <i class="fa-solid fa-arrow-left ms-2"></i>
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center py-4">
+            <h4>السلة فارغة حالياً!</h4>
+            <a href="{% url 'product_list' %}" class="btn btn-primary mt-2">تصفح المنتجات</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

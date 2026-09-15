@@ -1,0 +1,55 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}إتمام الطلب | المتجر الإلكتروني{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card checkout-card p-4 bg-white">
+                <h3 class="fw-bold mb-4 text-primary"><i class="fa-solid fa-truck-ramp-box me-2"></i> بيانات الشحن والإرسال</h3>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">الاسم الكامل</label>
+                        <input type="text" name="full_name" class="form-control" placeholder="أدخل اسمك الثلاثي" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">المدينة</label>
+                            <input type="text" name="city" class="form-control" placeholder="مثال: عدن" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">رقم الهاتف</label>
+                            <input type="tel" name="phone" class="form-control" placeholder="770000000" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">العنوان بالتفصيل</label>
+                        <textarea name="address" class="form-control" rows="3" placeholder="المنطقة، الشارع، أقرب نقطة دالة..." required></textarea>
+                    </div>
+
+                    <div class="alert alert-light border d-flex justify-content-between align-items-center mb-4">
+                        <span class="fs-5 fw-bold">المبلغ الإجمالي المطلوب:</span>
+                        <span class="fs-4 fw-bold text-success">{{ total_price }} $</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'cart_detail' %}" class="btn btn-outline-secondary px-4">العودة للسلة</a>
+                        <button type="submit" class="btn btn-success btn-lg px-5 fw-bold">تأكيد الطلب الآن <i class="fa-solid fa-check ms-2"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

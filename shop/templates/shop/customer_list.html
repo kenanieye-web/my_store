@@ -1,0 +1,70 @@
+{% extends 'shop/veltrix_base.html' %}
+
+{% block title %}إدارة العملاء - Veltrix{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">إدارة العملاء</h3>
+        <p class="text-muted mb-0">قائمة بجميع العملاء المسجلين في المتجر وبيانات التواصل الخاصة بهم</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-header bg-white py-3 border-0">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bx bx-group me-2 text-primary"></i> قائمة العملاء</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>اسم العميل</th>
+                    <th>رقم الجوال</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>المدينة</th>
+                    <th>تاريخ التسجيل</th>
+                    <th class="text-center">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td><strong>#{{ customer.id }}</strong></td>
+                    <td class="fw-bold text-dark">
+                        {{ customer.user.get_full_name|default:customer.user.username }}
+                    </td>
+                    <td>
+                        {% if customer.phone %}
+                            <a href="tel:{{ customer.phone }}" class="text-decoration-none fw-bold text-primary" dir="ltr">
+                                <i class="bx bx-phone me-1"></i>{{ customer.phone }}
+                            </a>
+                        {% else %}
+                            <span class="badge bg-light text-muted fw-normal">غير محدد</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ customer.user.email|default:"غير مسجل" }}</td>
+                    <td>
+                        <span class="badge bg-soft-info text-info">{{ customer.city|default:"عدن" }}</span>
+                    </td>
+                    <td>{{ customer.user.date_joined|date:"Y-m-d H:i" }}</td>
+                    <td class="text-center">
+                        {% if customer.phone %}
+                            <a href="https://wa.me/{{ customer.phone }}" target="_blank" class="btn btn-sm btn-soft-success" title="تواصل عبر واتساب">
+                                <i class="bx bxl-whatsapp font-size-16 align-middle"></i>
+                            </a>
+                        {% else %}
+                            <button class="btn btn-sm btn-light" disabled><i class="bx bxl-whatsapp text-muted"></i></button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">لا يوجد عملاء مسجلون حالياً.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

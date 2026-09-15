@@ -1,0 +1,128 @@
+{% extends 'shop/veltrix_base.html' %}
+
+{% block title %}لوحة التحكم | Veltrix{% endblock %}
+
+{% block content %}
+<style>
+    .stat-card { border: none; border-radius: 12px; color: white; padding: 20px; position: relative; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .stat-card .badge-top { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; }
+    .stat-card .icon { font-size: 2.2rem; opacity: 0.8; }
+    
+    .bg-card-new { background: linear-gradient(135deg, #00b4db, #0083b0); }
+    .bg-card-shipping { background: linear-gradient(135deg, #11998e, #38ef7d); }
+    .bg-card-delivered { background: linear-gradient(135deg, #f857a6, #ff5858); }
+    .bg-card-canceled { background: linear-gradient(135deg, #ff9966, #ff5e62); }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">لوحة التحكم</h3>
+        <p class="text-muted mb-0">عرض تفاصيل آخر الطلبات والإحصائيات العامة</p>
+    </div>
+    <a href="{% url 'home' %}" class="btn btn-outline-primary fw-bold" target="_blank">
+        <i class="bx bx-store me-1"></i> الانتقال للمتجر
+    </a>
+</div>
+
+<!-- كروت الإحصائيات -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card bg-card-new">
+            <span class="badge-top">{{ new_orders_count }}</span>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-normal mb-2">الجديدة</h5>
+                    <p class="mb-0 opacity-75 fs-7">طلبات بانتظار المعالجة</p>
+                </div>
+                <div class="icon"><i class="bx bx-check-circle"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card bg-card-shipping">
+            <span class="badge-top">{{ shipping_orders_count }}</span>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-normal mb-2">الشحن</h5>
+                    <p class="mb-0 opacity-75 fs-7">جاري معالجتها ونقلها</p>
+                </div>
+                <div class="icon"><i class="bx bx-shopping-bag"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card bg-card-delivered">
+            <span class="badge-top">{{ delivered_orders_count }}</span>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-normal mb-2">التوصيل</h5>
+                    <p class="mb-0 opacity-75 fs-7">تم تسليمها للعملاء</p>
+                </div>
+                <div class="icon"><i class="bx bx-car"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card bg-card-canceled">
+            <span class="badge-top">{{ canceled_orders_count }}</span>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-normal mb-2">الملغية</h5>
+                    <p class="mb-0 opacity-75 fs-7">طلبات ملغاة</p>
+                </div>
+                <div class="icon"><i class="bx bx-x-circle"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جدول أحدث الطلبات -->
+<div class="card border-0 shadow-sm rounded-3 mt-4">
+    <div class="card-header bg-white py-3 border-0">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bx bx-list-check me-2 text-primary"></i> أحدث الطلبات</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>رقم الطلب</th>
+                    <th>اسم العميل</th>
+                    <th>المدينة</th>
+                    <th>المبلغ الإجمالي</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الطلب</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in recent_orders %}
+                <tr>
+                    <td><strong>#{{ order.id }}</strong></td>
+                    <td>{{ order.full_name }}</td>
+                    <td>{{ order.city }}</td>
+                    <td class="text-success fw-bold">${{ order.total_price }}</td>
+                    <td>
+                        {% if order.status == 'new' %}
+                            <span class="badge bg-info text-dark">جديد</span>
+                        {% elif order.status == 'shipping' %}
+                            <span class="badge bg-warning text-dark">جاري الشحن</span>
+                        {% elif order.status == 'delivered' %}
+                            <span class="badge bg-success">تم التوصيل</span>
+                        {% else %}
+                            <span class="badge bg-danger">ملغى</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">لا توجد طلبات مسجلة حتى الآن.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

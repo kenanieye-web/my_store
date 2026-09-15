@@ -1,0 +1,110 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}المتجر الإلكتروني | منتجاتنا{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="fa-solid fa-store me-2 text-primary"></i> منتجاتنا</h2>
+        <a href="{% url 'cart_detail' %}" class="btn btn-outline-primary fw-bold">
+            <i class="fa-solid fa-cart-shopping me-1"></i> سلة التسوق
+        </a>
+    </div>
+
+    <!-- شريط البحث والفلترة حسب القسم -->
+    <div class="card border-0 shadow-sm p-3 mb-4 rounded-3">
+        <form method="GET" action="{% url 'product_list' %}" class="row g-3 align-items-center">
+            <!-- حقل البحث -->
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="ابحث عن منتج..." value="{{ search_query|default:'' }}">
+                    <button class="btn btn-primary fw-bold" type="submit">
+                        <i class="fa-solid fa-magnifying-glass me-1"></i> بحث
+                    </button>
+                </div>
+            </div>
+
+            <!-- القائمة المنسدلة للأقسام -->
+            <div class="col-md-4">
+                <select name="category" class="form-select" onchange="this.form.submit()">
+                    <option value="">جميع الأقسام</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if selected_category|add:"0" == cat.id %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- حفظ قيمة البحث الحالية عند تغيير القسم -->
+            {% if search_query %}
+                <input type="hidden" name="q" value="{{ search_query }}">
+            {% endif %}
+
+            <!-- زر إلغاء الفلترة والبحث -->
+            <div class="col-md-2">
+                <a href="{% url 'product_list' %}" class="btn btn-outline-secondary w-100">عرض الكل</a>
+            </div>
+        </form>
+    </div>
+
+    {% if products %}
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for product in products %}
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm rounded-3">
+                    <!-- رابط الصورة للتفاصيل -->
+                    <a href="{% url 'product_detail' product.id %}" class="text-decoration-none">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" class="card-img-top p-3" alt="{{ product.name }}" style="height: 220px; object-fit: contain;">
+                        {% else %}
+                            <div class="bg-secondary bg-opacity-10 d-flex justify-content-center align-items-center rounded-top" style="height: 220px;">
+                                <i class="fa-solid fa-image text-muted display-4"></i>
+                            </div>
+                        {% endif %}
+                    </a>
+                    
+                    <div class="card-body d-flex flex-column">
+                        <!-- رابط عنوان المنتج للتفاصيل -->
+                        <h5 class="card-title fw-bold text-center mb-3">
+                            <a href="{% url 'product_detail' product.id %}" class="text-dark text-decoration-none">
+                                {{ product.name }}
+                            </a>
+                        </h5>
+                        
+                        {% if product.description %}
+                            <p class="card-text text-muted small mb-2">{{ product.description|truncatewords:12 }}</p>
+                        {% endif %}
+
+                        {% if product.specifications %}
+                            <div class="bg-light p-3 rounded mb-3 small text-secondary">
+                                <i class="fa-solid fa-list-check me-1 text-primary"></i>
+                                <div>{{ product.specifications|linebreaksbr }}</div>
+                            </div>
+                        {% endif %}
+
+                        <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
+                            <span class="fs-5 text-success fw-bold">${{ product.price }}</span>
+                            <div>
+                                <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-secondary btn-sm me-1" title="عرض التفاصيل">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-sm fw-bold px-3">
+                                    <i class="fa-solid fa-cart-plus me-1"></i> إضافة
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center py-5 shadow-sm rounded-3">
+            <i class="fa-solid fa-box-open display-3 text-secondary mb-3"></i>
+            <h4>لا توجد منتجات تطابق بحثك حالياً!</h4>
+            <p class="text-muted">تأكد من كتابة اسم المنتج بشكل صحيح أو اختر قسم آخر، أو انقر على "عرض الكل".</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

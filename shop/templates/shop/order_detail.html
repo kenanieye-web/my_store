@@ -1,0 +1,82 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}تفاصيل الطلب #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fa-solid fa-file-invoice text-primary me-2"></i> تفاصيل الطلب #{{ order.id }}</h2>
+        <div>
+            <a href="{% url 'order_list' %}" class="btn btn-outline-secondary me-2">
+                <i class="fa-solid fa-list me-1"></i> جميع الطلبات
+            </a>
+            <a href="{% url 'merchant_dashboard' %}" class="btn btn-outline-primary">
+                <i class="fa-solid fa-arrow-right me-1"></i> العودة للوحة التحكم
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- معلومات العميل والطلب وتحديث الحالة -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 mb-3">
+                <h5 class="fw-bold text-primary mb-3">معلومات العميل</h5>
+                <p class="mb-2"><strong>الاسم:</strong> {{ order.full_name }}</p>
+                <p class="mb-2"><strong>الهاتف:</strong> {{ order.phone }}</p>
+                <p class="mb-2"><strong>المدينة:</strong> {{ order.city }}</p>
+                <p class="mb-0"><strong>العنوان:</strong> {{ order.address }}</p>
+            </div>
+
+            <!-- نموذج تغيير حالة الطلب -->
+            <div class="card border-0 shadow-sm p-3">
+                <h5 class="fw-bold text-primary mb-3">تحديث حالة الطلب</h5>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <select name="status" class="form-select">
+                            <option value="جديد" {% if order.status == 'جديد' or order.status == 'new' %}selected{% endif %}>جديد</option>
+                            <option value="جاري الشحن" {% if order.status == 'جاري الشحن' or order.status == 'shipping' or order.status == 'قيد الشحن' %}selected{% endif %}>جاري الشحن</option>
+                            <option value="تم التوصيل" {% if order.status == 'تم التوصيل' or order.status == 'delivered' %}selected{% endif %}>تم التوصيل</option>
+                            <option value="ملغي" {% if order.status == 'ملغي' or order.status == 'canceled' %}selected{% endif %}>ملغي</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">حفظ التغييرات</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- قائمة المنتجات داخل الطلب -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm p-3">
+                <h5 class="fw-bold text-primary mb-3">عناصر الطلب</h5>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>المنتج</th>
+                                <th>السعر</th>
+                                <th>الكمية</th>
+                                <th>الإجمالي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td>{{ item.product.name }}</td>
+                                <td>${{ item.price }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td class="fw-bold">${{ item.get_total_price }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-3">
+                    <span class="fs-5 fw-bold">الإجمالي الكلي:</span>
+                    <span class="fs-4 fw-bold text-success">${{ order.total_price }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

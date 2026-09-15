@@ -1,0 +1,112 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-5 align-items-start">
+        
+        <!-- العمود الأول: صورة المنتج -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm p-3 rounded-3 text-center bg-white">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}" style="max-height: 450px; object-fit: contain; width: 100%;">
+                {% else %}
+                    <div class="bg-light d-flex justify-content-center align-items-center rounded" style="height: 350px;">
+                        <i class="fa-solid fa-image text-muted display-1"></i>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- العمود الثاني: تفاصيل المنتج مرتبة رأسياً -->
+        <div class="col-lg-6">
+            <div class="ps-lg-3">
+                
+                <!-- 1. التصنيف -->
+                {% if product.category %}
+                    <div class="mb-2">
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fs-6 fw-normal">
+                            {{ product.category.name }}
+                        </span>
+                    </div>
+                {% endif %}
+
+                <!-- 2. اسم المنتج -->
+                <h1 class="fw-bold text-dark mb-2" style="font-size: 2rem;">{{ product.name }}</h1>
+
+                <!-- 3. الموديل (تحت الاسم تماماً) -->
+                {% if product.model %}
+                    <div class="mb-3">
+                        <span class="text-secondary fs-6 fw-bold">
+                            <i class="fa-solid fa-barcode me-1"></i> الموديل: <span class="text-dark">{{ product.model }}</span>
+                        </span>
+                    </div>
+                {% endif %}
+
+                <!-- 4. السعر (تحت الموديل) -->
+                <div class="mb-3">
+                    <h2 class="text-success fw-bold m-0">${{ product.price }}</h2>
+                </div>
+
+                <!-- 5. حالة المخزون -->
+                {% if product.stock is not None %}
+                    <div class="mb-4">
+                        {% if product.stock > 0 %}
+                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                                <i class="fa-solid fa-check-circle me-1"></i> متوفر في المخزون ({{ product.stock }} قطعة)
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
+                                <i class="fa-solid fa-xmark-circle me-1"></i> غير متوفر حالياً
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <!-- 6. وصف المنتج -->
+                {% if product.description %}
+                    <div class="mb-4 text-muted" style="line-height: 1.8; font-size: 1.05rem;">
+                        {{ product.description }}
+                    </div>
+                {% endif %}
+
+                <!-- 7. المواصفات الفنية -->
+                {% if product.specifications %}
+                    <div class="card bg-light border-0 p-3 mb-4 rounded-3">
+                        <h6 class="fw-bold text-secondary mb-2"><i class="fa-solid fa-list-check me-1 text-primary"></i> المواصفات الفنية:</h6>
+                        <p class="mb-0 text-secondary small" style="line-height: 1.7;">{{ product.specifications|linebreaksbr }}</p>
+                    </div>
+                {% endif %}
+
+                <!-- 8. نموذج إضافة المنتج للسلة مع تحديد الكمية -->
+                <form action="{% url 'add_to_cart' product.id %}" method="POST" class="mt-4">
+                    {% csrf_token %}
+                    <div class="row g-3 align-items-center">
+                        <div class="col-auto">
+                            <label for="quantity" class="col-form-label fw-bold">الكمية:</label>
+                        </div>
+                        <div class="col-auto">
+                            <input type="number" id="quantity" name="quantity" value="1" min="1" {% if product.stock %}max="{{ product.stock }}"{% endif %} class="form-control text-center shadow-sm" style="width: 90px;">
+                        </div>
+                        <div class="col">
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm" {% if product.stock is not None and product.stock <= 0 %}disabled{% endif %}>
+                                <i class="fa-solid fa-cart-plus me-2"></i> إضافة إلى السلة
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- 9. رابط العودة -->
+                <div class="mt-4 pt-3 border-top">
+                    <a href="{% url 'product_list' %}" class="text-decoration-none text-secondary small fw-bold">
+                        <i class="fa-solid fa-arrow-right me-1"></i> العودة إلى قائمة المنتجات
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
