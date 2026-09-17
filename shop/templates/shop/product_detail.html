@@ -1,21 +1,58 @@
 {% extends 'shop/base.html' %}
 
-{% block title %}{{ product.name }}{% endblock %}
+{% block title %}{{ product.name }} | متجر كنان{% endblock %}
+
+{% block meta_description %}{{ product.description|striptags|truncatechars:150|default:"اطلب الآن منتج مميز" }}{% endblock %}
+
+{% block meta_keywords %}{{ product.name }}, تسوق {{ product.name }}, متجر كنان, استيراد وتصدير, منتجات جملة{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="row g-5 align-items-start">
         
-        <!-- العمود الأول: صورة المنتج -->
+        <!-- العمود الأول: صورة المنتج المعرض والفيديو -->
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm p-3 rounded-3 text-center bg-white">
-                {% if product.image %}
-                    <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}" style="max-height: 450px; object-fit: contain; width: 100%;">
-                {% else %}
-                    <div class="bg-light d-flex justify-content-center align-items-center rounded" style="height: 350px;">
-                        <i class="fa-solid fa-image text-muted display-1"></i>
-                    </div>
-                {% endif %}
+                
+                <!-- عرض الوسائط الرئيسية (الصورة أو الفيديو) -->
+                <div class="main-media-container position-relative d-flex align-items-center justify-content-center bg-light rounded" style="min-height: 380px;">
+                    {% if product.image %}
+                        <img id="mainDisplayImage" src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}" style="max-height: 450px; object-fit: contain;">
+                    {% else %}
+                        <div id="noImagePlaceholder" class="d-flex justify-content-center align-items-center rounded" style="height: 350px;">
+                            <i class="fa-solid fa-image text-muted display-1"></i>
+                        </div>
+                    {% endif %}
+
+                    {% if product.video %}
+                        <video id="mainDisplayVideo" controls class="img-fluid rounded w-100 d-none" style="max-height: 450px;">
+                            <source src="{{ product.video.url }}" type="video/mp4">
+                            متصفحك لا يدعم تشغيل الفيديو.
+                        </video>
+                    {% endif %}
+                </div>
+
+                <!-- شريط المصغرات (معرض الصور والفيديو) -->
+                <div class="d-flex flex-wrap gap-2 justify-content-center align-items-center mt-3 pt-2 border-top">
+                    {% if product.image %}
+                        <div class="thumbnail-box border rounded p-1" onclick="switchToImage('{{ product.image.url }}')" style="width: 65px; height: 65px; cursor: pointer;">
+                            <img src="{{ product.image.url }}" class="w-100 h-100 rounded" style="object-fit: cover;" alt="صورة رئيسية">
+                        </div>
+                    {% endif %}
+
+                    {% for img in product.images.all %}
+                        <div class="thumbnail-box border rounded p-1" onclick="switchToImage('{{ img.image.url }}')" style="width: 65px; height: 65px; cursor: pointer;">
+                            <img src="{{ img.image.url }}" class="w-100 h-100 rounded" style="object-fit: cover;" alt="صورة فرعية">
+                        </div>
+                    {% endfor %}
+
+                    {% if product.video %}
+                        <div class="thumbnail-box border border-danger rounded p-1 bg-dark text-white d-flex align-items-center justify-content-center" onclick="switchToVideo()" style="width: 65px; height: 65px; cursor: pointer;" title="تشغيل الفيديو">
+                            <i class="fa-solid fa-circle-play fs-3 text-danger"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
             </div>
         </div>
 
@@ -35,7 +72,7 @@
                 <!-- 2. اسم المنتج -->
                 <h1 class="fw-bold text-dark mb-2" style="font-size: 2rem;">{{ product.name }}</h1>
 
-                <!-- 3. الموديل (تحت الاسم تماماً) -->
+                <!-- 3. الموديل -->
                 {% if product.model %}
                     <div class="mb-3">
                         <span class="text-secondary fs-6 fw-bold">
@@ -44,42 +81,45 @@
                     </div>
                 {% endif %}
 
-                <!-- 4. السعر (تحت الموديل) -->
+                <!-- 4. السعر -->
                 <div class="mb-3">
-                    <h2 class="text-success fw-bold m-0">${{ product.price }}</h2>
+                    <h2 class="text-success fw-bold m-0">${{ product.price|floatformat:2 }}</h2>
                 </div>
 
                 <!-- 5. حالة المخزون -->
-                {% if product.stock is not None %}
-                    <div class="mb-4">
-                        {% if product.stock > 0 %}
-                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
-                                <i class="fa-solid fa-check-circle me-1"></i> متوفر في المخزون ({{ product.stock }} قطعة)
-                            </span>
-                        {% else %}
-                            <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
-                                <i class="fa-solid fa-xmark-circle me-1"></i> غير متوفر حالياً
-                            </span>
-                        {% endif %}
-                    </div>
-                {% endif %}
+                <div class="mb-4">
+                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                        <i class="fa-solid fa-check-circle me-1"></i> متوفر للطلب
+                    </span>
+                </div>
 
                 <!-- 6. وصف المنتج -->
                 {% if product.description %}
                     <div class="mb-4 text-muted" style="line-height: 1.8; font-size: 1.05rem;">
-                        {{ product.description }}
+                        {{ product.description|linebreaks }}
                     </div>
                 {% endif %}
 
                 <!-- 7. المواصفات الفنية -->
                 {% if product.specifications %}
-                    <div class="card bg-light border-0 p-3 mb-4 rounded-3">
-                        <h6 class="fw-bold text-secondary mb-2"><i class="fa-solid fa-list-check me-1 text-primary"></i> المواصفات الفنية:</h6>
-                        <p class="mb-0 text-secondary small" style="line-height: 1.7;">{{ product.specifications|linebreaksbr }}</p>
+                    <div class="card border-0 shadow-sm p-3 mb-4 rounded-3 bg-light">
+                        <h6 class="fw-bold text-dark mb-3">
+                            <i class="fa-solid fa-sliders me-2 text-primary"></i> المواصفات الفنية:
+                        </h6>
+                        <ul class="list-unstyled mb-0">
+                            {% for line in product.specifications.splitlines %}
+                                {% if line.strip %}
+                                    <li class="mb-2 d-flex align-items-center text-secondary fs-6">
+                                        <i class="fa-solid fa-circle-check text-success me-2"></i>
+                                        <span>{{ line }}</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
                     </div>
                 {% endif %}
 
-                <!-- 8. نموذج إضافة المنتج للسلة مع تحديد الكمية -->
+                <!-- 8. نموذج إضافة المنتج للسلة -->
                 <form action="{% url 'add_to_cart' product.id %}" method="POST" class="mt-4">
                     {% csrf_token %}
                     <div class="row g-3 align-items-center">
@@ -87,16 +127,16 @@
                             <label for="quantity" class="col-form-label fw-bold">الكمية:</label>
                         </div>
                         <div class="col-auto">
-                            <input type="number" id="quantity" name="quantity" value="1" min="1" {% if product.stock %}max="{{ product.stock }}"{% endif %} class="form-control text-center shadow-sm" style="width: 90px;">
+                            <input type="number" id="quantity" name="quantity" value="1" min="1" class="form-control text-center" style="width: 90px;">
                         </div>
                         <div class="col">
-                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm" {% if product.stock is not None and product.stock <= 0 %}disabled{% endif %}>
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
                                 <i class="fa-solid fa-cart-plus me-2"></i> إضافة إلى السلة
                             </button>
                         </div>
                     </div>
                 </form>
-
+  
                 <!-- 9. رابط العودة -->
                 <div class="mt-4 pt-3 border-top">
                     <a href="{% url 'product_list' %}" class="text-decoration-none text-secondary small fw-bold">
@@ -109,4 +149,41 @@
 
     </div>
 </div>
+
+<!-- JavaScript للتحويل بين الصور والفيديو -->
+<script>
+function switchToImage(imgUrl) {
+    const imgElement = document.getElementById('mainDisplayImage');
+    const videoElement = document.getElementById('mainDisplayVideo');
+    const placeholder = document.getElementById('noImagePlaceholder');
+
+    if (videoElement) {
+        videoElement.pause();
+        videoElement.classList.add('d-none');
+    }
+
+    if (placeholder) {
+        placeholder.classList.add('d-none');
+    }
+
+    if (imgElement) {
+        imgElement.src = imgUrl;
+        imgElement.classList.remove('d-none');
+    }
+}
+
+function switchToVideo() {
+    const imgElement = document.getElementById('mainDisplayImage');
+    const videoElement = document.getElementById('mainDisplayVideo');
+    const placeholder = document.getElementById('noImagePlaceholder');
+
+    if (imgElement) imgElement.classList.add('d-none');
+    if (placeholder) placeholder.classList.add('d-none');
+
+    if (videoElement) {
+        videoElement.classList.remove('d-none');
+        videoElement.play();
+    }
+}
+</script>
 {% endblock %}

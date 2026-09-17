@@ -96,7 +96,10 @@ TIME_ZONE = 'Asia/Aden'
 USE_I18N = True
 
 USE_TZ = True
-
+USE_L10N = False
+DECIMAL_SEPARATOR = '.'
+THOUSAND_SEPARATOR = ','
+USE_THOUSAND_SEPARATOR = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'

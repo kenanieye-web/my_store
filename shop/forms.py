@@ -1,27 +1,28 @@
 from django import forms
 from .models import Product, Category
 
-
-# تخصيص حقل الاختيار ليظهر "المجموعة الرئيسية -> المجموعة الفرعية"
-class CategoryChoiceField(forms.ModelChoiceField):
-    def label_from_instance(self, obj):
-        if obj.parent:
-            return f"{obj.parent.name} ⬅ {obj.name}"
-        return f"[مجموعة رئيسية] {obj.name}"
-
-
 class ProductForm(forms.ModelForm):
-    # إعادة تعريف حقل التصنيف ليستخدم التنسيق الشجري
-    category = CategoryChoiceField(
-        queryset=Category.objects.all().select_related('parent'),
-        label="التصنيف",
-        empty_label="- اختر التصنيف (رئيسي / فرعي) -",
-        widget=forms.Select(attrs={'class': 'form-select'})
+    # حقل مستقل للمجموعة الرئيسية
+    main_category = forms.ModelChoiceField(
+        queryset=Category.objects.filter(parent__isnull=True),
+        required=True,
+        label="المجموعة الرئيسية",
+        empty_label="- اختر المجموعة الرئيسية -",
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'main-category-select'})
+    )
+    
+    # حقل مستقل للمجموعة الفرعية
+    sub_category = forms.ModelChoiceField(
+        queryset=Category.objects.filter(parent__isnull=False),
+        required=False,
+        label="المجموعة الفرعية (اختياري)",
+        empty_label="- اختر المجموعة الفرعية (إن وُجدت) -",
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'sub-category-select'})
     )
 
     class Meta:
         model = Product
-        fields = ['name', 'model', 'category', 'description', 'price', 'stock', 'image', 'is_available']
+        fields = ['name', 'model', 'description', 'price', 'stock', 'image', 'is_available']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'اسم المنتج'}),
             'model': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'موديل المنتج'}),
@@ -31,3 +32,28 @@ class ProductForm(forms.ModelForm):
             'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'is_available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # في حالة التعديل، جلب القيم الحالية وتعبئتها في الحقلين
+        if self.instance and self.instance.pk and self.instance.category:
+            if self.instance.category.parent:
+                self.fields['main_category'].initial = self.instance.category.parent
+                self.fields['sub_category'].initial = self.instance.category
+            else:
+                self.fields['main_category'].initial = self.instance.category
+
+    def save(self, commit=True):
+        product = super().save(commit=False)
+        sub_cat = self.cleaned_data.get('sub_category')
+        main_cat = self.cleaned_data.get('main_category')
+        
+        # إذا اختار المستخدم مجموعة فرعية، يتم اعتمادها كفئة للمنتج، وإلا يتم اعتماد الرئيسية
+        if sub_cat:
+            product.category = sub_cat
+        else:
+            product.category = main_cat
+            
+        if commit:
+            product.save()
+        return product

@@ -68,8 +68,10 @@ class Product(models.Model):
         verbose_name="التصنيف"
     )
     description = models.TextField(blank=True, verbose_name="الوصف")
+    specifications = models.TextField(blank=True, null=True, verbose_name="المواصفات الفنية")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="السعر")
-    image = models.ImageField(upload_to='products/', blank=True, null=True, verbose_name="صورة المنتج")
+    image = models.ImageField(upload_to='products/', blank=True, null=True, verbose_name="الصورة الرئيسية")
+    video = models.FileField(upload_to='products/videos/', blank=True, null=True, verbose_name="فيديو المنتج", help_text="يمكنك رفع فيديو للمنتج (MP4)")
     is_available = models.BooleanField(default=True, verbose_name="متاح للبيع")
     stock = models.IntegerField(default=0, verbose_name="المخزون")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاريخ الإضافة")
@@ -87,6 +89,24 @@ class Product(models.Model):
         if self.category and self.category.parent:
             return self.category.parent
         return self.category
+
+
+# 3-أ. نموذج الصور الإضافية للمنتج (معرض الصور)
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product, 
+        related_name='images', 
+        on_delete=models.CASCADE, 
+        verbose_name="المنتج"
+    )
+    image = models.ImageField(upload_to='products/gallery/', verbose_name="الصورة الإضافية")
+
+    class Meta:
+        verbose_name = "صورة إضافية"
+        verbose_name_plural = "معرض صور المنتجات"
+
+    def __str__(self):
+        return f"صورة إضافية لـ {self.product.name}"
 
 
 # 4. نموذج السلة وعناصرها

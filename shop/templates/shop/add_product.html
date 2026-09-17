@@ -1,97 +1,89 @@
 {% extends 'shop/base.html' %}
-{% block title %}إضافة منتج جديد{% endblock %}
+
+{% block title %}إضافة منتج جديد | متجر كنان{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    
-                    <!-- الهيدر -->
-                    <div class="mb-4">
-                        <h3 class="fw-bold text-success mb-0 text-center">
-                            <i class="fa-solid fa-cart-plus me-2"></i> إضافة منتج جديد للمتجر
-                        </h3>
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4 rounded-3 bg-white">
+                <h2 class="fw-bold text-success mb-4 text-center">
+                    <i class="fa-solid fa-cart-plus me-2"></i> إضافة منتج جديد للمتجر
+                </h2>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- اسم المنتج والموديل -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">اسم المنتج:</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">الموديل:</label>
+                            {{ form.model }}
+                            {% if form.model.errors %}<div class="text-danger small">{{ form.model.errors }}</div>{% endif %}
+                        </div>
                     </div>
-                    
-                    <form method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        <!-- عرض أخطاء النموذج العامة -->
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                {{ form.non_field_errors }}
-                            </div>
-                        {% endif %}
 
-                        <!-- اسم المنتج والموديل -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.name.id_for_label }}" class="form-label font-bold">اسم المنتج:</label>
-                                {{ form.name }}
-                                {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.model.id_for_label }}" class="form-label font-bold">الموديل:</label>
-                                {{ form.model }}
-                                {% if form.model.errors %}<div class="text-danger small">{{ form.model.errors }}</div>{% endif %}
-                            </div>
+                    <!-- حقول التصنيف (المجموعة الرئيسية والمجموعة الفرعية منفصلة) -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.main_category.id_for_label }}" class="form-label fw-bold">المجموعة الرئيسية:</label>
+                            {{ form.main_category }}
+                            {% if form.main_category.errors %}<div class="text-danger small">{{ form.main_category.errors }}</div>{% endif %}
                         </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.sub_category.id_for_label }}" class="form-label fw-bold">المجموعة الفرعية:</label>
+                            {{ form.sub_category }}
+                            {% if form.sub_category.errors %}<div class="text-danger small">{{ form.sub_category.errors }}</div>{% endif %}
+                        </div>
+                    </div>
 
-                        <!-- حقل التصنيف (المجموعة الرئيسية والفرعية) -->
-                        <div class="mb-3">
-                            <label for="{{ form.category.id_for_label }}" class="form-label font-bold">التصنيف (المجموعة الرئيسية والفرعية):</label>
-                            {{ form.category }}
-                            {% if form.category.errors %}<div class="text-danger small">{{ form.category.errors }}</div>{% endif %}
+                    <!-- السعر والمخزون -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">السعر:</label>
+                            {{ form.price }}
+                            {% if form.price.errors %}<div class="text-danger small">{{ form.price.errors }}</div>{% endif %}
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">المخزون:</label>
+                            {{ form.stock }}
+                            {% if form.stock.errors %}<div class="text-danger small">{{ form.stock.errors }}</div>{% endif %}
+                        </div>
+                    </div>
 
-                        <!-- السعر والمخزون -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.price.id_for_label }}" class="form-label font-bold">السعر:</label>
-                                {{ form.price }}
-                                {% if form.price.errors %}<div class="text-danger small">{{ form.price.errors }}</div>{% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.stock.id_for_label }}" class="form-label font-bold">المخزون:</label>
-                                {{ form.stock }}
-                                {% if form.stock.errors %}<div class="text-danger small">{{ form.stock.errors }}</div>{% endif %}
-                            </div>
-                        </div>
+                    <!-- الوصف -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">الوصف:</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
+                    </div>
 
-                        <!-- الوصف -->
-                        <div class="mb-3">
-                            <label for="{{ form.description.id_for_label }}" class="form-label font-bold">الوصف:</label>
-                            {{ form.description }}
-                            {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
-                        </div>
+                    <!-- الصورة -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">صورة المنتج:</label>
+                        {{ form.image }}
+                        {% if form.image.errors %}<div class="text-danger small">{{ form.image.errors }}</div>{% endif %}
+                    </div>
 
-                        <!-- صورة المنتج -->
-                        <div class="mb-3">
-                            <label for="{{ form.image.id_for_label }}" class="form-label font-bold">صورة المنتج:</label>
-                            {{ form.image }}
-                            {% if form.image.errors %}<div class="text-danger small">{{ form.image.errors }}</div>{% endif %}
-                        </div>
+                    <!-- متاح للبيع -->
+                    <div class="mb-4 form-check">
+                        {{ form.is_available }}
+                        <label class="form-check-label fw-bold" for="{{ form.is_available.id_for_label }}">متاح للبيع</label>
+                    </div>
 
-                        <!-- متاح للبيع -->
-                        <div class="form-check mb-4">
-                            {{ form.is_available }}
-                            <label for="{{ form.is_available.id_for_label }}" class="form-check-label font-bold">
-                                متاح للبيع
-                            </label>
-                            {% if form.is_available.errors %}<div class="text-danger small">{{ form.is_available.errors }}</div>{% endif %}
-                        </div>
-                        
-                        <!-- أزرار الإجراءات -->
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fa-solid fa-check me-1"></i> حفظ وإضافة المنتج
-                            </button>
-                            <a href="{% url 'merchant_product_list' %}" class="btn btn-outline-secondary">إلغاء</a>
-                        </div>
-                    </form>
-                </div>
+                    <!-- زر الحفظ -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success py-2 fw-bold shadow-sm">
+                            <i class="fa-solid fa-check me-2"></i> حفظ وإضافة المنتج
+                        </button>
+                    </div>
+                </form>
+
             </div>
         </div>
     </div>
