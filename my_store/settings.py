@@ -63,13 +63,15 @@ WSGI_APPLICATION = 'my_store.wsgi.application'
 
 
 # Database
+import dj_database_url
+
+# Database - Supabase PostgreSQL Cloud
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -118,3 +120,5 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+# حماية النطاق والسماح بطلب الدخول عبر بروتوكول الآمان والنطاق الخاص بك
+CSRF_TRUSTED_ORIGINS = ['https://kenan2026.pythonanywhere.com']
