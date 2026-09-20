@@ -1,0 +1,373 @@
+[
+    {
+        "model": "sessions.session",
+        "pk": "zoe2t36w4c9fx2scivm7ghjpgbk4nehi",
+        "fields": {
+            "session_data": ".eJxVjMsOgjAQAP9lz6Zp6_YBR-98A9nuFouaklA4Gf_dkHDQ68xk3jDSvpVxb3kdZ4EeDFx-WSJ-5noIeVC9L4qXuq1zUkeiTtvUsEh-3c72b1CoFejBY4xktDchcu4cOe60xejYakSdgkRByRaNpclEz85ffUheTxYlOGH4fAGzKjbl:1x7vf0:L5XzLy3kTGQGU8yIx1_sDvOVnJnMqSo8AI9PzjDbRjk",
+            "expire_date": "2026-10-03T14:03:22.825Z"
+        }
+    },
+    {
+        "model": "shop.customuser",
+        "fields": {
+            "password": "pbkdf2_sha256$1500000$N1P1kdXYwS2aBbN3wf5Q6M$29G5FFaE68C2E7nd1umpMki0FdRszBy34XZFuAnDFQ4=",
+            "last_login": "2026-09-19T14:03:22.817Z",
+            "is_superuser": true,
+            "username": "kenan",
+            "first_name": "",
+            "last_name": "",
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2026-09-18T17:44:26.613Z",
+            "email": "kenan.ie.ye@gmail.com",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 1,
+        "fields": {
+            "name": "الطاقة الشمسية",
+            "slug": "ltk-lshmsy",
+            "parent": null
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 2,
+        "fields": {
+            "name": "الالكترونيات",
+            "slug": "llktronyt",
+            "parent": null
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 3,
+        "fields": {
+            "name": "مستلزمات الجوال",
+            "slug": "mstlzmt-lgol",
+            "parent": null
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 4,
+        "fields": {
+            "name": "الكهربائبات",
+            "slug": "lkhrbbt",
+            "parent": null
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 5,
+        "fields": {
+            "name": "مستلزمات المنزل",
+            "slug": "mstlzmt-lmnzl",
+            "parent": null
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 6,
+        "fields": {
+            "name": "مستلزمات التجميل",
+            "slug": "mstlzmt-ltgmyl",
+            "parent": null
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 7,
+        "fields": {
+            "name": "مستلزمات الشبكات",
+            "slug": "mstlzmt-lshbkt-olkmbyotr",
+            "parent": null
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 8,
+        "fields": {
+            "name": "أدوات البناء",
+            "slug": "adot-lbn",
+            "parent": null
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 9,
+        "fields": {
+            "name": "انفرترات",
+            "slug": "nfrtrt",
+            "parent": 1
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 10,
+        "fields": {
+            "name": "الألواح",
+            "slug": "laloh",
+            "parent": 1
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 11,
+        "fields": {
+            "name": "بطاريات الليثيوم",
+            "slug": "btryt-llythyom",
+            "parent": 1
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 12,
+        "fields": {
+            "name": "شواحن وكيبلات",
+            "slug": "shohn-okyblt",
+            "parent": 3
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 13,
+        "fields": {
+            "name": "مستلزمات تصوير",
+            "slug": "mstlzmt-tsoyr",
+            "parent": 3
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 14,
+        "fields": {
+            "name": "كابلات الشبكة",
+            "slug": "mstlzmt-lkmbyotr",
+            "parent": 7
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 16,
+        "fields": {
+            "name": "أنظمة المراقبة",
+            "slug": "anthm-lmrkb",
+            "parent": null
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 17,
+        "fields": {
+            "name": "مستلزمات الكمبيوتر",
+            "slug": "2mstlzmt-lkmbyotr",
+            "parent": null
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 18,
+        "fields": {
+            "name": "الأدبترات",
+            "slug": "ladbtrt",
+            "parent": 17
+        }
+    },
+    {
+        "model": "shop.category",
+        "pk": 19,
+        "fields": {
+            "name": "كاميرات wiFI",
+            "slug": "kmyrt-wifi",
+            "parent": 16
+        }
+    },
+    {
+        "model": "shop.product",
+        "pk": 1,
+        "fields": {
+            "name": "انفرتر Growatt SPF 6000ES Plus",
+            "model": null,
+            "category": 9,
+            "description": "",
+            "specifications": null,
+            "price": "400.00",
+            "image": "products/Growatt-SPF-6000ES-Plus-6kw-off-grid-inverter.jpg",
+            "video": "",
+            "is_available": true,
+            "stock": 0,
+            "created_at": "2026-09-13T14:04:30.728Z"
+        }
+    },
+    {
+        "model": "shop.product",
+        "pk": 2,
+        "fields": {
+            "name": "بطارية جروات ليثيوم 5 كيلووات ساعة",
+            "model": "HOPE 5.0L/LW-B1)",
+            "category": 11,
+            "description": "السعة المقدرة: 5.12 كيلووات ساعة \r\n(الطاقة القابلة للاستخدام 5.0 كيلووات ساعة).\r\nالجهد الاسمي: 51.2 فولت.عمق التفريغ (DoD):\r\n يصل إلى 98%.العمر الافتراضي: أكثر من 6000 دورة شحن وتفريغ عند درجات الحرارة الطبيعية.تيار الشحن/التفريغ: 100 أمبير كحد أقصى مستمر.",
+            "specifications": null,
+            "price": "600.00",
+            "image": "products/Growatt-lithium-lifepo4-battery-5kwh.webp",
+            "video": "",
+            "is_available": true,
+            "stock": 0,
+            "created_at": "2026-09-13T16:12:40.314Z"
+        }
+    },
+    {
+        "model": "shop.product",
+        "pk": 3,
+        "fields": {
+            "name": "لوح طاقة شمسية 625W",
+            "model": "LONGi Hi-MO X10",
+            "category": 10,
+            "description": "كفاءة عالية: تصل كفاءة اللوح إلى مستويات قياسية تتراوح بين 23.7% إلى 24.8%.القدرة الكهربائية: تتوفر بقدرات عالية تبدأ من حوالي 620 إلى 650 واط (مثل سلسلة Explorer).الأبعاد والوزن: تقدر أبعاد اللوح بـ 2382 × 1134 × 30 مم وبوزن يبلغ 33.5 كجم.مقاومة الحرارة والتظليل: أداء متفوق في الأجواء الحارة والإضاءة الضعيفة، مع تصميم يمنع مشكلة البقع الساخنة (Hot Spots) الناتجة عن التظليل الجزئي.الضمان: تتميز بضمان أداء ممتد يصل إلى 30 عاماً",
+            "specifications": null,
+            "price": "150.00",
+            "image": "products/Longi-625W-635W-645W-solar-panels.webp",
+            "video": "",
+            "is_available": true,
+            "stock": 0,
+            "created_at": "2026-09-14T15:23:54.083Z"
+        }
+    },
+    {
+        "model": "shop.product",
+        "pk": 4,
+        "fields": {
+            "name": "كيبل شحن جوال Kluge     Typ-C وايفون",
+            "model": "S-212",
+            "category": 12,
+            "description": "السرعة  30w \r\n ضد Ios",
+            "specifications": "",
+            "price": "1.40",
+            "image": "products/s-212.jpg",
+            "video": "",
+            "is_available": true,
+            "stock": 0,
+            "created_at": "2026-09-16T14:09:13.851Z"
+        }
+    },
+    {
+        "model": "shop.product",
+        "pk": 5,
+        "fields": {
+            "name": "مثبت جوال وعصى سلفي ثلاثي القوائم",
+            "model": "H5",
+            "category": 13,
+            "description": "1. طول تمديد يصل إلى 590 مم لسهولة التصوير\r\n2. اتصال بلوتوث بمدى 10 أمتار لتصوير أكثر ملاءمة\r\n3. حامل ثلاثي القوائم مخفي وقابل للطي\r\n4. تصميم مدمج وخفيف الوزن مع خاصية التثبيت أحادي المحور",
+            "specifications": null,
+            "price": "15.00",
+            "image": "products/H5.png",
+            "video": "",
+            "is_available": true,
+            "stock": 0,
+            "created_at": "2026-09-17T18:28:24.157Z"
+        }
+    },
+    {
+        "model": "shop.product",
+        "pk": 6,
+        "fields": {
+            "name": "ادبتر 12V",
+            "model": "4A/5A",
+            "category": 18,
+            "description": "محول طاقة عالي القدرة  12 فولت 3 أمبير، 12 فولت 4 أمبير، 12 فولت 5 أمبير،\r\n للاستخدام الصناعي، مزود طاقة مستقر،\r\n متوافق مع أجهزة متعددة، كابل مقاوم للانحناء، \r\nغلاف مقاوم للاشتعال",
+            "specifications": "",
+            "price": "1.17",
+            "image": "products/124A.jpg",
+            "video": "",
+            "is_available": true,
+            "stock": 0,
+            "created_at": "2026-09-17T18:59:52.124Z"
+        }
+    },
+    {
+        "model": "shop.product",
+        "pk": 7,
+        "fields": {
+            "name": "مثبت جوال مانع اهتزاز",
+            "model": "A10",
+            "category": 13,
+            "description": "",
+            "specifications": "",
+            "price": "22.00",
+            "image": "products/A10.png",
+            "video": "",
+            "is_available": true,
+            "stock": 0,
+            "created_at": "2026-09-17T19:08:25.228Z"
+        }
+    },
+    {
+        "model": "shop.productimage",
+        "pk": 1,
+        "fields": {
+            "product": 4,
+            "image": "products/gallery/-212.jpg"
+        }
+    },
+    {
+        "model": "shop.productimage",
+        "pk": 2,
+        "fields": {
+            "product": 7,
+            "image": "products/gallery/A10_اسود.png"
+        }
+    },
+    {
+        "model": "shop.productimage",
+        "pk": 3,
+        "fields": {
+            "product": 7,
+            "image": "products/gallery/a10___2.png"
+        }
+    },
+    {
+        "model": "shop.cart",
+        "pk": 7,
+        "fields": {
+            "created_at": "2026-09-15T08:43:31.671Z"
+        }
+    },
+    {
+        "model": "shop.cart",
+        "pk": 8,
+        "fields": {
+            "created_at": "2026-09-16T14:46:10.987Z"
+        }
+    },
+    {
+        "model": "shop.cartitem",
+        "pk": 9,
+        "fields": {
+            "cart": 7,
+            "product": 1,
+            "quantity": 1
+        }
+    },
+    {
+        "model": "shop.cartitem",
+        "pk": 10,
+        "fields": {
+            "cart": 8,
+            "product": 4,
+            "quantity": 1
+        }
+    },
+    {
+        "model": "shop.cartitem",
+        "pk": 11,
+        "fields": {
+            "cart": 8,
+            "product": 3,
+            "quantity": 1
+        }
+    }
+]
