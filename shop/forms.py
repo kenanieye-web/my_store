@@ -1,5 +1,7 @@
 from django import forms
-from .models import Product, Category
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from .models import CustomUser
+from .models import Product, Category, Customer
 
 class ProductForm(forms.ModelForm):
     # حقل مستقل للمجموعة الرئيسية
@@ -57,3 +59,37 @@ class ProductForm(forms.ModelForm):
         if commit:
             product.save()
         return product
+   
+
+# 1. نموذج تسجيل حساب جديد للعملاء (بالبريد الإلكتروني وحماية البيانات)
+class CustomerSignUpForm(UserCreationForm):
+    email = forms.EmailField(required=True, label="البريد الإلكتروني")
+    phone = forms.CharField(max_length=20, required=False, label="رقم الهاتف")
+    address = forms.CharField(widget=forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}), required=False, label="العنوان")
+    city = forms.CharField(max_length=100, initial='عدن', required=True, label="المدينة", widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+    class Meta(UserCreationForm.Meta):
+        model = CustomUser
+        fields = ('email', 'username', 'phone', 'address', 'city')
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'اسم المستخدم'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'البريد الإلكتروني'}),
+        }
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+            # تحديث أو إنشـاء ملف العميل المرتبط تلقائياً
+            customer, created = Customer.objects.get_or_create(user=user)
+            customer.phone = self.cleaned_data.get('phone')
+            customer.address = self.cleaned_data.get('address')
+            customer.city = self.cleaned_data.get('city')
+            customer.save()
+        return user
+
+# 2. نموذج تسجيل الدخول للعملاء عبر البريد الإلكتروني
+class CustomerLoginForm(AuthenticationForm):
+    username = forms.EmailField(label="البريد الإلكتروني", widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'البريد الإلكتروني'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'كلمة المرور'}))

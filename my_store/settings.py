@@ -10,12 +10,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-if+4-va!16p$bq09hzj_x7_j*+qmo*3!puk0a4z9$6$m72d*ga'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-local-dev-only-CHANGE-ME')
 
-# تفعيل وضع التطوير المحلي لرؤية الصور والأخطاء
-DEBUG = True
+# القيمة الافتراضية True (مريحة للتطوير المحلي)، ونجبرها False على الموقع الحي عبر متغير بيئة
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['kenan2026.pythonanywhere.com', 'localhost', '127.0.0.1', '*']
+ALLOWED_HOSTS = ['kenan2026.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -122,3 +122,4 @@ MAILERS = {
 }
 # حماية النطاق والسماح بطلب الدخول عبر بروتوكول الآمان والنطاق الخاص بك
 CSRF_TRUSTED_ORIGINS = ['https://kenan2026.pythonanywhere.com']
+AUTH_USER_MODEL = 'shop.CustomUser'

@@ -2,14 +2,12 @@ from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.models import User
+from .models import Product, Category, Cart, CartItem, Order, OrderItem, Customer, CustomUser
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
 from django.db.models import Q, Sum, Count
 from django.utils import timezone
-
-from .models import Product, Category, Cart, CartItem, Order, OrderItem, Customer
-from .forms import ProductForm
+from .forms import ProductForm, CustomerSignUpForm, CustomerLoginForm
 
 # --- الديكورات المخصصة والتحقق من الصلاحيات ---
 
@@ -39,11 +37,17 @@ def home(request):
     }
     return render(request, 'shop/home.html', context)
 
-def product_list(request):
+def product_list(request, category_slug=None):
     """عرض المنتجات مع دعم البحث والتصفية حسب القسم"""
     products = Product.objects.filter(is_available=True).select_related('category')
     categories = Category.objects.filter(parent=None)
-    
+    current_category = None
+
+    # الفلترة عبر رابط التصنيف المباشر (category/<slug>/)
+    if category_slug:
+        current_category = get_object_or_404(Category, slug=category_slug)
+        products = products.filter(Q(category=current_category) | Q(category__parent=current_category))
+
     # البحث باسم المنتج أو الوصف
     search_query = request.GET.get('q')
     if search_query:
@@ -51,7 +55,7 @@ def product_list(request):
             Q(name__icontains=search_query) | Q(description__icontains=search_query)
         )
         
-    # الفلترة حسب التصنيف (تشمل التصنيف الرئيسي والأقسام الفرعية التابعة له)
+    # الفلترة حسب التصنيف عبر معامل GET (category/?category=id)
     category_id = request.GET.get('category')
     if category_id:
         products = products.filter(Q(category_id=category_id) | Q(category__parent_id=category_id))
@@ -59,6 +63,7 @@ def product_list(request):
     context = {
         'products': products,
         'categories': categories,
+        'current_category': current_category,
         'selected_category': category_id,
         'search_query': search_query,
     }
@@ -117,7 +122,8 @@ def cart_detail(request):
 
 def remove_from_cart(request, item_id):
     """حذف عنصر محدد من السلة"""
-    cart_item = get_object_or_404(CartItem, id=item_id)
+    cart_id = request.session.get('cart_id')
+    cart_item = get_object_or_404(CartItem, id=item_id, cart_id=cart_id)
     product_name = cart_item.product.name
     cart_item.delete()
     messages.info(request, f"تم حذف '{product_name}' من سلة التسوق.")
@@ -128,9 +134,9 @@ def update_cart_quantity(request, item_id):
     if request.method != 'POST':
         return redirect('cart_detail')
 
-    cart_item = get_object_or_404(CartItem, id=item_id)
+    cart_id = request.session.get('cart_id')
+    cart_item = get_object_or_404(CartItem, id=item_id, cart_id=cart_id)
     action = request.POST.get('action')
-    
     if action == 'increase':
         cart_item.quantity += 1
         cart_item.save()
@@ -146,7 +152,6 @@ def update_cart_quantity(request, item_id):
             messages.info(request, f"تم حذف '{product_name}' من سلة التسوق.")
             
     return redirect('cart_detail')
-
 
 # --- إتمام الشراء والطلبات ---
 
@@ -205,65 +210,46 @@ def checkout(request):
     return render(request, 'shop/checkout.html', {'cart': cart, 'total_price': total_price})
 
 
-# --- نظام الحسابات والمستخدمين ---
+# --- نظام الحسابات والمستخدمين (المحدث بالبريد الإلكتروني والنموذج الآمن) ---
 
 def register_user(request):
-    """تسجيل العميل وإنشاء حساب وحساب عميل متطابق"""
+    """تسجيل حساب عميل جديد باستخدام النماذج المخصصة"""
     if request.user.is_authenticated:
         return redirect('home')
-
+    
     if request.method == 'POST':
-        full_name = request.POST.get('full_name', '').strip()
-        email = request.POST.get('email', '').strip().lower()
-        password = request.POST.get('password', '').strip()
-        phone = request.POST.get('phone', '').strip()
-        city = request.POST.get('city', 'عدن').strip()
-
-        if not email or not password or not full_name:
-            messages.error(request, "يرجى ملء جميع الحقول المطلوبة.")
-        elif User.objects.filter(username=email).exists():
-            messages.error(request, "هذا البريد الإلكتروني مسجل مسبقاً.")
-        else:
-            with transaction.atomic():
-                user = User.objects.create_user(
-                    username=email,
-                    email=email,
-                    password=password,
-                    first_name=full_name,
-                    is_staff=False,
-                    is_superuser=False
-                )
-                
-                Customer.objects.create(
-                    user=user,
-                    phone=phone,
-                    city=city
-                )
-
+        form = CustomerSignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
             login(request, user)
-            messages.success(request, f"أهلاً بك يا {full_name}! تم إنشاء حسابك بنجاح.")
-            return redirect('home')
-
-    return render(request, 'shop/register.html')
+            messages.success(request, "تم إنشاء الحساب وتسجيل الدخول بنجاح!")
+            return redirect('customer_profile')
+    else:
+        form = CustomerSignUpForm()
+    
+    return render(request, 'shop/register.html', {'form': form})
 
 def login_user(request):
-    """تسجيل الدخول بالبريد الإلكتروني وكلمة المرور"""
+    """تسجيل الدخول للعميل عبر البريد الإلكتروني"""
     if request.user.is_authenticated:
         return redirect('home')
-
-    if request.method == 'POST':
-        email = request.POST.get('email', '').strip().lower()
-        password = request.POST.get('password', '').strip()
         
-        user = authenticate(request, username=email, password=password)
-        if user is not None:
-            login(request, user)
-            messages.success(request, "مرحباً بك مجدداً!")
-            return redirect('home')
+    if request.method == 'POST':
+        form = CustomerLoginForm(request, data=request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=email, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, "مرحباً بك مجدداً في المتجر!")
+                return redirect('customer_profile')
         else:
             messages.error(request, "البريد الإلكتروني أو كلمة المرور غير صحيحة.")
-
-    return render(request, 'shop/login.html')
+    else:
+        form = CustomerLoginForm()
+        
+    return render(request, 'shop/login.html', {'form': form})
 
 def logout_user(request):
     """تسجيل الخروج"""
@@ -273,10 +259,14 @@ def logout_user(request):
 
 @login_required(login_url='login')
 def customer_profile(request):
-    """عرض سجل الطلبات الخاصة بالمستخدم المسجل"""
+    """عرض لوحة تحكم وسجل طلبات العميل"""
+    customer, created = Customer.objects.get_or_create(user=request.user)
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'shop/customer_profile.html', {'orders': orders})
-
+    context = {
+        'customer': customer,
+        'orders': orders,
+    }
+    return render(request, 'shop/customer_profile.html', context)
 
 # --- لوحة تحكم التاجر وإدارة المتجر (مخصصة للطاقم الإداري فقط) ---
 
@@ -357,7 +347,7 @@ def customer_list(request):
 @staff_required
 def staff_user_list(request):
     """عرض طاقم الإدارة"""
-    staff_users = User.objects.filter(Q(is_staff=True) | Q(is_superuser=True)).order_by('-date_joined')
+    staff_users = CustomUser.objects.filter(Q(is_staff=True) | Q(is_superuser=True)).order_by('-date_joined')
     return render(request, 'shop/staff_user_list.html', {'staff_users': staff_users})
 
 @staff_required
@@ -420,7 +410,9 @@ def edit_product(request, pk):
 def delete_product(request, pk):
     """حذف منتج"""
     product = get_object_or_404(Product, pk=pk)
-    product_name = product.name
-    product.delete()
-    messages.success(request, f"تم حذف المنتج '{product_name}' بنجاح.")
-    return redirect('merchant_product_list')
+    if request.method == 'POST':
+        product_name = product.name
+        product.delete()
+        messages.success(request, f"تم حذف المنتج '{product_name}' بنجاح.")
+        return redirect('merchant_product_list')
+    return render(request, 'shop/confirm_delete_product.html', {'product': product})
