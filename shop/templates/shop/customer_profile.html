@@ -11,12 +11,18 @@
         </a>
     </div>
 
-    <div class="row g-4">
-        <!-- معلومات المستخدم -->
+<div class="row g-4">
+   <!-- معلومات المستخدم -->
         <div class="col-md-4">
             <div class="card border-0 shadow-sm p-4">
                 <h4 class="text-primary mb-3">مرحباً، {{ request.user.username }}</h4>
+                <p class="mb-2"><strong>الاسم الكامل:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</p>
                 <p class="mb-2"><strong>البريد الإلكتروني:</strong> {{ request.user.email|default:"غير مسجل" }}</p>
+                <p class="mb-2"><strong>رقم الهاتف:</strong> {{ request.user.customer_profile.phone|default:"غير متوفر" }}</p>
+                <p class="mb-2"><strong>العنوان:</strong> {{ request.user.customer_profile.address|default:"غير متوفر" }}</p>
+                <p class="mb-2"><strong>المدينة:</strong> {{ request.user.customer_profile.city|default:"عدن" }}</p>
+                <p class="mb-2"><strong>لغة الحساب:</strong> {{ request.user.customer_profile.language|default:"العربية" }}</p>
+                <p class="mb-2"><strong>العملة المفضلة:</strong> {{ request.user.customer_profile.currency|default:"SAR" }}</p> 
                 <p class="mb-2"><strong>تاريخ الانضمام:</strong> {{ request.user.date_joined|date:"Y-m-d" }}</p>
             </div>
         </div>

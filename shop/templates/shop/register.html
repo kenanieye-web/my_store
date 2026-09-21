@@ -29,7 +29,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">رقم الهاتف</label>
-                        <input type="text" name="phone" class="form-control" placeholder="مثال: 770000000">
+                        <input type="text" name="phone" class="form-control" maxlength="9" minlength="9" required placeholder="77xxxxxxx">
+                        <div class="form-text text-muted">يجب أن يتكون رقم الهاتف من 9 أرقام بالضبط.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">المدينة</label>

@@ -217,7 +217,7 @@ def register_user(request):
     if request.user.is_authenticated:
         return redirect('home')
     
-    if request.method == 'POST':
+    if request.method == 'POST':      
         form = CustomerSignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
