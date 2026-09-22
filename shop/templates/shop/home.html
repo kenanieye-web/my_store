@@ -1,33 +1,71 @@
 {% extends 'shop/base.html' %}
+{% load static %}
 
-{% block title %}الرئيسية | متجر Kenan للاستيراد والتصدير{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'shop/css/style.css' %}">
+{% endblock %}
+{% block title %}الرئيسية | متجر Kenan  {% endblock %}
 
 {% block content %}
-<!-- قسم الهيرو بالأزرق والبرتقالي (عريض وممتد بالكامل بعرض الشاشة) -->
-<div class="container-fluid px-0 mb-5">
-    <section class="text-center text-white py-5 shadow-sm w-100" style="background-color: #1b5299 !important; border-bottom: 5px solid #e67e22 !important; border-radius: 0 0 20px 20px !important;">
-        <div class="container py-3">
-            <div class="row justify-content-center">
-                <div class="col-lg-9 col-md-11">
-                    <h1 class="display-4 fw-bold mb-3" style="color: #ffffff !important;">مرحباً بك في متجر Kenan</h1>
-                    <p class="lead mb-4" style="color: #f8f9fa !important; opacity: 0.9;">تصفح أحدث المنتجات والعروض الحصرية واطلب بكل سهولة وسرعة.</p>
-                    <a href="{% url 'product_list' %}" class="btn btn-lg px-5 shadow fw-bold py-3" style="background-color: #e67e22 !important; color: #ffffff !important; border: none !important;">
-                        تسوق الآن <i class="fa-solid fa-arrow-left ms-2"></i>
-                    </a>
+<!-- قسم من نحن (About Us) المستقل -->
+<div id="about-us" class="container-fluid py-5 position-relative my-4" style="display: none; font-family: 'Tajawal', sans-serif !important; ...">
+    <div class="container py-3">
+        
+        <!-- زر إغلاق خاص بقسم من نحن -->
+        <div class="d-flex justify-content-end mb-3">
+            <a href="javascript:void(0);" onclick="document.getElementById('about-us').style.display='none';" class="btn btn-sm btn-light shadow-sm fw-bold px-3 py-2 rounded-pill text-dark border">
+                <i class="fa-solid fa-xmark text-danger me-1"></i> إغلاق النافذة
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="p-5 bg-white rounded-4 shadow-sm border-0 text-center" style="border-top: 5px solid #1b5299 !important;">
+                    <h2 class="fw-bold display-6 mb-4" style="color: #1b5299 !important;">من نحن</h2>
+                    <p class="text-dark lh-lg fs-5 fw-medium m-0" style="text-align: justify; line-height: 2.2 !important;">
+                        تُعد شركة <span class="fw-bold" style="color: #e67e22;">Kenan</span> للاستيراد والتصدير جسركم الموثوق نحو الأسواق العالمية، وشريككم الاستراتيجي في تحقيق النجاح التجاري. نحن شركة متخصصة في تقديم حلول متكاملة في مجال الاستيراد والتصدير، متخذين من الصين مركزاً رئيسياً لعملياتنا، بهدف ربط عملائنا بأفضل المنتجات وأقوى الموردين حول العالم.
+                    </p>
                 </div>
             </div>
         </div>
-    </section>
+
+    </div>
+</div>
+<!-- قسم الهيرو بالأزرق والبرتقالي (عريض وممتد بالكامل بعرض الشاشة) -->
+<div class="container-fluid px-0 mb-3">
+    <section class="hero-split">
+  <!-- القسم الأول: تسوق أونلاين -->
+  <div class="hero-half hero-shopping">
+    <div class="hero-overlay">
+      <div class="hero-content">
+        <h2>تسوّق بسهولة من مكانك</h2>
+        <p>اكتشف عالم من المنتجات المميزة بضغطة زر</p>
+       <a href="{% url 'product_list' %}" class="btn-hero">تسوق الآن ←</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- القسم الثاني: شحن ولوجستيات -->
+  <div class="hero-half hero-shipping">
+    <div class="hero-overlay">
+      <div class="hero-content">
+        <h2>من الصين إلى بلدك</h2>
+        <p>شحن موثوق وتوصيل سريع بأفضل الأسعار</p>
+        <a href="#how-it-works" onclick="document.getElementById('how-it-works').style.display='block';" class="btn-hero btn-outline">كيف نعمل؟</a>
+      </div>
+    </div>
+     </div>
+   </section>
 </div>
 
 <div class="container">
     <!-- قسم المميزات -->
-    <div class="row g-4 mb-5 text-center">
+    <div class="row g-3 mb-4 text-center">
         <div class="col-md-4">
-            <div class="p-4 bg-white rounded-3 shadow-sm h-100" style="border-top: 4px solid #e67e22 !important;">
-                <i class="fa-solid fa-truck-fast display-5 mb-3" style="color: #1b5299 !important;"></i>
-                <h5 class="fw-bold">توصيل سريع</h5>
-                <p class="text-muted small mb-0">توصيل لكافة المناطق برعاية وشحن آمن.</p>
+            <div class="p-3 bg-white rounded-3 shadow-sm h-100" style="border-top: 4px solid #e67e22 !important;">
+               <i class="fa-solid fa-tag display-6 mb-2" style="color: #1b5299 !important;"></i>
+               <h6 class="fw-bold">أسعار الصين</h6>
+               <p class="text-muted small mb-0">أفضل أسعار الجملة مباشرة من الأسواق الصينية.</p>
             </div>
         </div>
         <div class="col-md-4">
@@ -45,6 +83,101 @@
             </div>
         </div>
     </div>
+     <!-- استيراد خط تجوال (Tajawal) الواضح والكثيف -->
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<!-- قسم مسار العمل (How We Work) المُصحح -->
+<div id="how-it-works" class="container-fluid py-5 position-relative" style="display: none; font-family: 'Tajawal', sans-serif !important; background: linear-gradient(135deg, rgba(27, 82, 153, 0.12) 0%, rgba(230, 126, 34, 0.12) 100%);">
+    <div class="container py-3">
+        
+        <!-- زر إغلاق النافذة -->
+        <div class="d-flex justify-content-end mb-3">
+            <a href="javascript:void(0);" onclick="document.getElementById('how-it-works').style.display='none';" class="btn btn-sm btn-light shadow-sm fw-bold px-3 py-2 rounded-pill text-dark border">
+                <i class="fa-solid fa-xmark text-danger me-1"></i> إغلاق النافذة
+            </a>
+        </div>
+
+        <!-- عنوان القسم -->
+        <div class="text-center mb-5">
+            <h2 class="fw-bold display-6" style="color: #1b5299 !important;">
+                مسار عملنا <span style="color: #e67e22 !important; font-size: 1.5rem;">( How We Work )</span>
+            </h2>
+            <p class="text-secondary fs-6 fw-bold">رحلة استيراد منتجاتك من المصانع الصينية إلى بابك بخطوات مدروسة وآمنة</p>
+        </div>
+
+        <!-- شبكة الخطوات -->
+        <div class="row g-4 justify-content-center">
+            
+            <!-- الخطوة 1 -->
+            <div class="col-lg-4 col-md-6">
+                <div class="p-4 bg-white rounded-4 shadow-sm h-100 border-0" style="border-top: 5px solid #1b5299 !important;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold m-0 fs-5" style="color: #1b5299;">1. استلام الطلب والدراسة</h5>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm" style="width: 42px; height: 42px; background-color: #1b5299; font-size: 1.1rem;">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </div>
+                    </div>
+                    <p class="text-dark m-0 lh-lg" style="font-size: 0.95rem; font-weight: 500;">تبدأ الرحلة باستقبال مواصفات منتجاتكم ودراستها بعناية لتحديد أفضل الموردين في السوق الصيني.</p>
+                </div>
+            </div>
+
+            <!-- الخطوة 2 -->
+            <div class="col-lg-4 col-md-6">
+                <div class="p-4 bg-white rounded-4 shadow-sm h-100 border-0" style="border-top: 5px solid #e67e22 !important;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold m-0 fs-5" style="color: #1b5299;">2. التفاوض والتعاقد</h5>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm" style="width: 42px; height: 42px; background-color: #e67e22; font-size: 1.1rem;">
+                            <i class="fa-solid fa-handshake"></i>
+                        </div>
+                    </div>
+                    <p class="text-dark m-0 lh-lg" style="font-size: 0.95rem; font-weight: 500;">نتفاوض مع المصانع لضمان أفضل الأسعار، ونقوم بصياغة العقود بدقة لضمان كامل حقوقكم.</p>
+                </div>
+            </div>
+
+            <!-- الخطوة 3 -->
+            <div class="col-lg-4 col-md-6">
+                <div class="p-4 bg-white rounded-4 shadow-sm h-100 border-0" style="border-top: 5px solid #1b5299 !important;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold m-0 fs-5" style="color: #1b5299;">3. فحص الجودة (QC)</h5>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm" style="width: 42px; height: 42px; background-color: #1b5299; font-size: 1.1rem;">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                    </div>
+                    <p class="text-dark m-0 lh-lg" style="font-size: 0.95rem; font-weight: 500;">يقوم فريقنا الميداني بزيارة المصانع وفحص البضاعة بدقة عالية لضمان مطابقتها للمواصفات.</p>
+                </div>
+            </div>
+
+            <!-- الخطوة 4 -->
+            <div class="col-lg-5 col-md-6">
+                <div class="p-4 bg-white rounded-4 shadow-sm h-100 border-0" style="border-top: 5px solid #e67e22 !important;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold m-0 fs-5" style="color: #1b5299;">4. الشحن واللوجستيات</h5>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm" style="width: 42px; height: 42px; background-color: #e67e22; font-size: 1.1rem;">
+                            <i class="fa-solid fa-truck-fast"></i>
+                        </div>
+                    </div>
+                    <p class="text-dark m-0 lh-lg" style="font-size: 0.95rem; font-weight: 500;">تنسيق عمليات الشحن البحري أو الجوي بأمان تام وحجز الحاويات والمساحات المطلوبة.</p>
+                </div>
+            </div>
+
+            <!-- الخطوة 5 (المُصححة داخل البطاقة البيضاء) -->
+            <div class="col-lg-5 col-md-6">
+                <div class="p-4 bg-white rounded-4 shadow-sm h-100 border-0" style="border-top: 5px solid #1b5299 !important;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold m-0 fs-5" style="color: #1b5299;">5. التسليم والدعم</h5>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm" style="width: 42px; height: 42px; background-color: #1b5299; font-size: 1.1rem;">
+                            <i class="fa-solid fa-headset"></i>
+                        </div>
+                    </div>
+                    <p class="text-dark m-0 lh-lg" style="font-size: 0.95rem; font-weight: 500;">وصول البضاعة إلى وجهتكم النهائية مع تقديم الدعم المستمر لضمان رضاكم التام عن كل شحنة.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</div>
 
     <!-- أحدث المنتجات -->
     <div class="d-flex justify-content-between align-items-center mb-4">

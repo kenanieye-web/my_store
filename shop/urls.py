@@ -39,4 +39,5 @@ urlpatterns = [
     path('merchant/products/add/', views.add_product, name='add_product'),
     path('merchant/products/edit/<int:pk>/', views.edit_product, name='edit_product'),
     path('merchant/products/delete/<int:pk>/', views.delete_product, name='delete_product'),
-]
+    path('merchant/import-product/', views.import_product_from_url, name='import_product_from_url'),
+]   

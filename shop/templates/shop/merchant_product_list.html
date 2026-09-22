@@ -10,6 +10,20 @@
         </a>
     </div>
 
+    <!-- نموذج الاستيراد السريع عبر الرابط -->
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body">
+            <form action="{% url 'import_product_from_url' %}" method="POST">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="url" name="product_url" class="form-control" placeholder="الصق رابط المنتج من علي بابا هنا للاستيراد السريع..." required>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-download me-1"></i> سحب واستيراد تلقائي
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
     <div class="card shadow-sm border-0">
         <div class="card-body">
             <div class="table-responsive">
