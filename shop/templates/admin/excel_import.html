@@ -4,6 +4,9 @@
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="file" name="excel_file" accept=".xlsx" required>
+    <br><label>ملف الصور (ZIP):</label>
+    <input type="file" name="zip_file" accept=".zip">
+    <br>
     <input type="submit" value="رفع">
 </form>
 {% endblock %}

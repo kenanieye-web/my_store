@@ -1,0 +1,9 @@
+{
+  "public":   ["home", "product_list", "product_detail", "live_search"],
+  "cart":     ["add_to_cart", "cart_detail", "remove_from_cart", "update_cart_quantity"],
+  "orders":   ["checkout"],
+  "account":  ["register_user", "login_user", "logout_user", "customer_profile"],
+  "merchant": ["staff_required", "merchant_dashboard", "sales_report", "customer_list", "staff_user_list",
+               "order_list", "order_detail", "merchant_product_list", "add_product", "edit_product",
+               "delete_product", "import_product_from_url", "download_template", "import_excel"]
+}

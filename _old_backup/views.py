@@ -75,7 +75,44 @@ def product_list(request, category_slug=None):
 def product_detail(request, pk):
     """عرض تفاصيل منتج محدد"""
     product = get_object_or_404(Product.objects.select_related('category'), pk=pk, is_available=True)
-    return render(request, 'shop/product_detail.html', {'product': product})
+    # جلب المنتجات المشابهة (نفس التصنيف، باستبعاد المنتج الحالي، وبحد أقصى 4 منتجات)
+    related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:4]
+def product_detail(request, pk):
+    """عرض تفاصيل منتج محدد"""
+    product = get_object_or_404(Product.objects.select_related('category'), pk=pk, is_available=True)
+    # جلب المنتجات المشابهة (نفس التصنيف، باستبعاد المنتج الحالي، وبحد أقصى 4 منتجات)
+    related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:4]
+    
+    context = {
+        'product': product,
+        'related_products': related_products,
+    }
+    return render(request, 'shop/product_detail.html', context)
+
+
+def live_search(request):
+    """إرجاع نتائج البحث الفوري بصيغة JSON للـ AJAX"""
+    query = request.GET.get('q', '')
+    products = []
+    if query:
+        product_objs = Product.objects.filter(name__icontains=query, is_available=True)[:5]
+        for p in product_objs:
+            products.append({
+                'id': p.id,
+                'name': p.name,
+                'price': float(p.price),
+                'image_url': p.image.url if p.image else '',
+                'url': p.get_absolute_url() if hasattr(p, 'get_absolute_url') else f'/product/{p.id}/'
+            })
+    return JsonResponse({'products': products})
+
+
+# --- إدارة سلة التسوق ---   
+    context = {
+        'product': product,
+        'related_products': related_products,
+    }
+    return render(request, 'shop/product_detail.html', context)
 
 
 # --- إدارة سلة التسوق ---
@@ -484,3 +521,34 @@ def import_product_from_url(request):
             return redirect('merchant_product_list')
 
     return redirect('merchant_product_list')
+import pandas as pd
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.contrib import messages
+from .models import Product
+
+def download_template(name):
+    # إنشاء ملف إكسل فارغ بالأعمدة المطلوبة للمنتجات
+    df = pd.DataFrame(columns=['name', 'price', 'category', 'is_available'])
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment.filename=product_template.xlsx'
+    df.to_excel(response, index=False)
+    return response
+
+def import_excel(request):
+    if request.method == 'POST' and request.FILES.get('excel_file'):
+        excel_file = request.FILES['excel_file']
+        try:
+            df = pd.read_excel(excel_file)
+            for _, row in df.iterrows():
+                Product.objects.create(
+                    name=row.get('name'),
+                    price=row.get('price'),
+                    is_available=row.get('is_available', True)
+                )
+            messages.success(request, "تم استيراد المنتجات بنجاح!")
+        except Exception as e:
+            messages.error(request, f"حدث خطأ أثناء الاستيراد: {e}")
+        return redirect('merchant_product_list')
+    
+    return render(request, 'shop/import_excel.html')

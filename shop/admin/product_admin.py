@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, ProductImage, Cart, CartItem, Order, OrderItem, Customer
+from shop.models import Category, Product, ProductImage
 import openpyxl
 from django.http import HttpResponse
 from django.urls import path
@@ -9,34 +9,11 @@ from django.core.files.base import ContentFile
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import os
+import zipfile
+
+from shop.admin.product_image_inline import ProductImageInline
 
 
-# 1. تخصيص عرض التصنيفات
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'parent', 'slug']
-    list_filter = ['parent']
-    prepopulated_fields = {'slug': ('name',)}
-    search_fields = ['name']
-
-
-# 2. تخصيص عرض العملاء
-@admin.register(Customer)
-class CustomerAdmin(admin.ModelAdmin):
-    list_display = ['user', 'phone', 'city', 'created_at']
-    search_fields = ['user__username', 'user__first_name', 'phone', 'city']
-    list_filter = ['city', 'created_at']
-
-
-# 3. إتاحة رفع صور متعددة للمنتج داخل صفحة المنتج
-class ProductImageInline(admin.TabularInline):
-    model = ProductImage
-    extra = 3
-    verbose_name = "صورة إضافية"
-    verbose_name_plural = "معرض الصور الإضافية"
-
-
-# 4. تخصيص عرض المنتجات مع إضافة معرض الصور والبحث المتقدم واستيراد/تصدير Excel
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ['name', 'category', 'price', 'stock', 'is_available', 'created_at']
@@ -50,7 +27,7 @@ class ProductAdmin(admin.ModelAdmin):
     EXCEL_HEADERS = [
         'ID (اتركه فارغ لمنتج جديد)', 'اسم المنتج', 'الموديل', 'التصنيف',
         'الوصف', 'المواصفات الفنية', 'السعر', 'متاح للبيع (نعم/لا)', 'المخزون',
-        'رابط الصورة',
+        'رابط الصورة (اختياري)', 'صورة المنتج', 'صورة العلبة',
     ]
 
     def export_to_excel(self, request, queryset):
@@ -71,6 +48,8 @@ class ProductAdmin(admin.ModelAdmin):
                 'نعم' if p.is_available else 'لا',
                 p.stock,
                 '',
+                '',  # صورة المنتج - يُضاف يدويًا لأن التصدير لا يستخرج صورًا مضمّنة
+                '',  # صورة العلبة
             ])
 
         response = HttpResponse(
@@ -84,19 +63,24 @@ class ProductAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('import-excel/', self.import_excel, name='product-import-excel'),
-            path('download-template/', self.download_template, name='product-download-template'),
-            path('import-from-url/', self.import_from_url, name='product-import-from-url'),
-        ]
+        # الروابط بالأسماء البسيطة والأسماء المركبة لضمان عدم حدوث أي خطأ في أي صفحة
+        path('import-excel/', self.import_excel, name='import-excel'),
+        path('import-excel/', self.import_excel, name='shop_product_import-excel'),
+        
+        path('download-template/', self.download_template, name='download-template'),
+        path('download-template/', self.download_template, name='shop_product_download-template'),
+        
+        path('import-from-url/', self.import_from_url, name='import-from-url'),
+        path('import-from-url/', self.import_from_url, name='shop_product_import-from-url'),
+    ]
         return custom_urls + urls
-
     def download_template(self, request):
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Template"
         ws.append(self.EXCEL_HEADERS)
         ws.append(['', 'مثال: لابتوب HP', 'HP-2024', 'إلكترونيات',
-                    'وصف المنتج هنا', 'المواصفات هنا', 1500, 'نعم', 10, ''])
+                    'وصف المنتج هنا', 'المواصفات هنا', 1500, 'نعم', 10, '', '', ''])
 
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -110,7 +94,16 @@ class ProductAdmin(admin.ModelAdmin):
             excel_file = request.FILES["excel_file"]
             wb = openpyxl.load_workbook(excel_file)
             ws = wb.active
-
+            
+            # التقاط وفك ملف الـ ZIP في الذاكرة
+            zip_file = request.FILES.get("zip_file")
+            images_dict = {}
+            if zip_file:
+                with zipfile.ZipFile(zip_file, 'r') as z:
+                    for filename in z.namelist():
+                        if not filename.endswith('/') and '__MACOSX' not in filename:
+                            images_dict[os.path.basename(filename)] = z.read(filename)
+                            
             headers = [cell.value for cell in ws[1]]
             errors = []
 
@@ -128,6 +121,7 @@ class ProductAdmin(admin.ModelAdmin):
 
                 category_obj, _ = Category.objects.get_or_create(name=category_name)
 
+                # 1. إنشاء أو تحديث المنتج أولاً للحصول على product_obj
                 product_obj, created = Product.objects.update_or_create(
                     id=data.get('ID (اتركه فارغ لمنتج جديد)') or None,
                     defaults={
@@ -142,7 +136,42 @@ class ProductAdmin(admin.ModelAdmin):
                     }
                 )
 
-                image_url = data.get('رابط الصورة')
+                # 2. ربط وحفظ الصور من ملف الـ ZIP مع دعم تلقائي للامتدادات
+                product_img_name = data.get('صورة المنتج')
+                package_img_name = data.get('صورة العلبة')
+
+                def find_image_content(img_name):
+                    if not img_name:
+                        return None, None
+                    name_str = str(img_name).strip()
+                    if name_str in images_dict:
+                        return name_str, images_dict[name_str]
+                    for ext in ['.jpg', '.JPG', '.png', '.PNG', '.jpeg', '.JPEG']:
+                        if (name_str + ext) in images_dict:
+                            return name_str + ext, images_dict[name_str + ext]
+                    return None, None
+
+                # حفظ صورة المنتج الأساسية
+                found_name, img_bytes = find_image_content(product_img_name)
+                if found_name and img_bytes:
+                    product_obj.image.save(
+                        found_name,
+                        ContentFile(img_bytes),
+                        save=True
+                    )
+
+                # حفظ صورة العلبة (المعرض الإضافي)
+                found_pkg_name, pkg_bytes = find_image_content(package_img_name)
+                if found_pkg_name and pkg_bytes:
+                    gallery_image = ProductImage(product=product_obj)
+                    gallery_image.image.save(
+                        found_pkg_name,
+                        ContentFile(pkg_bytes),
+                        save=True
+                    )
+
+                # 3. الخيار البديل: رابط صورة خارجي (اختياري للتوافق)
+                image_url = data.get('رابط الصورة (اختياري)') or data.get('رابط الصورة')
                 if image_url:
                     try:
                         img_response = requests.get(image_url, timeout=10)
@@ -150,7 +179,7 @@ class ProductAdmin(admin.ModelAdmin):
                             file_name = os.path.basename(urlparse(image_url).path) or f"product_{product_obj.id}.jpg"
                             product_obj.image.save(file_name, ContentFile(img_response.content), save=True)
                     except Exception as e:
-                        errors.append(f"الصف {row_num}: فشل تحميل الصورة ({e})")
+                        errors.append(f"الصف {row_num}: فشل تحميل الصورة من الرابط ({e})")
 
             msg = "تم استيراد المنتجات بنجاح"
             if errors:
@@ -217,20 +246,3 @@ class ProductAdmin(admin.ModelAdmin):
                     self.message_user(request, f"حدث خطأ أثناء سحب البيانات: {e}", level='error')
                     
         return render(request, "admin/url_import.html")
-# 5. تخصيص عرض الطلبات وعناصرها
-class OrderItemInline(admin.TabularInline):
-    model = OrderItem
-    raw_id_fields = ['product']
-
-
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
-    list_display = ['id', 'full_name', 'city', 'phone', 'total_price', 'status', 'created_at']
-    list_filter = ['status', 'created_at']
-    list_editable = ['status']
-    inlines = [OrderItemInline]
-
-
-# 6. تسجيل باقي النماذج
-admin.site.register(Cart)
-admin.site.register(CartItem)

@@ -17,7 +17,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <link rel="stylesheet" href="{% static 'shop/css/custom.css' %}">
-
+ {% block extra_css %}
+<link rel="stylesheet" href="{% static 'shop/css/style.css' %}">
+{% endblock %}
     <style>
         html, body {
             width: 100%;
@@ -140,7 +142,7 @@
             text-decoration: none;
         }
     </style>
-    {% block extra_css %}{% endblock %}
+   
 </head>
 <body>
 
@@ -148,61 +150,15 @@
     <!-- غلاف الهيدر بالكامل -->
     <header class="site-header">
         
-        <!-- 1. الشريط العلوي Top Bar -->
-        <div class="top-bar text-white py-2 small w-100" style="background-color: #15427d;">
-            <div class="container-fluid container-lg d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-3 ms-auto">
-                    <span class="text-white-50"><i class="fa-regular fa-sun"></i> متجر كنان  </span>
-                    <div class="dropdown">
-                        <button class="btn btn-sm dropdown-toggle text-white border-0 py-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            عربي (YE)
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                            <li><a class="dropdown-item active" href="#">العربية (YE)</a></li>
-                            <li><a class="dropdown-item" href="#">English</a></li>
-                        </ul>
-                    </div>
-                    <div class="dropdown">
-                        <button class="btn btn-sm dropdown-toggle text-white border-0 py-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            $ USD
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                            <li><a class="dropdown-item active" href="#">USD ($)</a></li>
-                            <li><a class="dropdown-item" href="#">YER (ر.ي)</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. الهيدر الأوسط (الشعار + البحث + الحساب) -->
-        <div class="bg-white py-3 border-bottom w-100">
-            <div class="container-fluid container-lg d-flex align-items-center justify-content-between gap-3">
-                
-                <!-- الشعار -->
-                <div class="header-brand">
-                    <a class="navbar-brand m-0" href="{% url 'home' %}">
-                        <img src="{% static 'shop/images/kenan_logo.png' %}" alt="متجر كنان" class="cropped-logo">
-                    </a>
-                </div>
-
-                <!-- مربع البحث -->
-                <div class="header-search d-none d-md-block mx-2 mx-lg-4">
-                    <form action="{% url 'product_list' %}" method="GET" class="position-relative w-100">
-                        <input type="text" name="q" class="form-control rounded-pill bg-light border ps-5 pe-3" placeholder="ابحث عن المنتجات..." style="height: 42px; width: 100%;">
-                        <button type="submit" class="btn position-absolute top-50 start-0 translate-middle-y text-muted border-0 ms-2">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </button>
-                    </form>
-                </div>
-
+       {% include 'shop/includes/topbar.html' %}
+       {% include 'shop/includes/header_main.html' %}
                 <!-- أزرار العمليات والتسجيل -->
                 <div class="header-actions">
                     <a href="{% url 'cart_detail' %}" class="btn btn-kenan-orange shadow-sm btn-sm px-3 py-2 position-relative">
                         <i class="fa-solid fa-cart-shopping me-1"></i> السلة
-                        {% if cart and cart.get_total_quantity > 0 %}
+                        {% if cart_count > 0 %}
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                {{ cart.get_total_quantity }}
+                                {{ cart_count }}
                             </span>
                         {% endif %}
                     </a>
@@ -230,74 +186,10 @@
             </div>
         </div>
 
-        <!-- 3. شريط الملاحة -->
-        <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm py-0 w-100" style="background-color: #1b5299 !important; border-bottom: 4px solid #e67e22 !important;">
-            <div class="container-fluid container-lg">
-                
-                <button class="navbar-toggler my-2 ms-auto" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="collapse navbar-collapse justify-content-start" id="navbarMainLinks">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1 align-items-center">
-                        <li class="nav-item">
-                            <a class="nav-link nav-link-custom" href="{% url 'home' %}">الرئيسية</a>
-                        </li>
-                        
-                        <!-- القائمة المنسدلة لفئات المنتجات -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle nav-link-custom"
-                               href="javascript:void(0);"
-                               id="navbarDropdownMenuLink"
-                               role="button"
-                               data-bs-toggle="dropdown"
-                               aria-expanded="false">
-                                فئات المنتجات
-                            </a>
-                            <ul class="dropdown-menu shadow-lg border-0 py-2 text-end" aria-labelledby="navbarDropdownMenuLink" style="min-width: 230px;">
-                                <li><a class="dropdown-item fw-bold text-dark py-2" href="{% url 'product_list' %}">⚡ جميع المنتجات</a></li>
-                                <li><hr class="dropdown-divider my-1"></li>
-                                {% for cat in categories %}
-                                    <li><a class="dropdown-item fw-bold text-primary py-2" href="{% url 'product_list' %}?category={{ cat.id }}">{{ cat.name }}</a></li>
-                                    {% for subcat in cat.children.all %}
-                                        <li>
-                                            <a class="dropdown-item py-1 pe-4 text-secondary small" href="{% url 'product_list' %}?category={{ subcat.id }}">
-                                                <i class="fa-solid fa-angle-left me-1"></i> {{ subcat.name }}
-                                            </a>
-                                        </li>
-                                    {% endfor %}
-                                    {% if not forloop.last %}<li><hr class="dropdown-divider my-1"></li>{% endif %}
-                                {% endfor %}
-                            </ul>
-                        </li>
-                        
-                        <li class="nav-item"><a class="nav-link nav-link-custom" href="#">العروض</a></li>
-                        <li class="nav-item"><a class="nav-link nav-link-custom" href="#about-us" onclick="document.getElementById('about-us').style.display='block';">من نحن</a></li>
-                        <li class="nav-item dropdown">
-    <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="contactDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">تواصل معنا</a>
-    <ul class="dropdown-menu text-end shadow border-0 p-2" aria-labelledby="contactDropdown" style="min-width: 200px;">
-        <li><a class="dropdown-item py-2 fw-bold text-success" href="https://wa.me/8615558681807" target="_blank"><i class="fa-brands fa-whatsapp me-2"></i> واتساب</a></li>
-        <li><a class="dropdown-item py-2 fw-bold text-primary" href="tel:784365557"><i class="fa-solid fa-phone me-2"></i> الاتصال الهاتفي </a></li>
-        <li><a class="dropdown-item py-2 fw-bold text-dark" href="kenan.ie.ye@gmail.com"><i class="fa-solid fa-envelope me-2"></i> البريد الالكتروني </a></li>
-    </ul>
-</li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+       {% include 'shop/includes/navbar.html' %}
     </header>
 
-    <!-- تنبيهات النظام -->
-    <div class="container mt-3">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    </div>
+    {% include 'shop/includes/messages.html' %}
 
     <!-- محتوى الصفحات الفرعية -->
     <main>
@@ -305,90 +197,78 @@
         {% endblock %}
     </main>
 
-    <!-- الفوتر -->
-    <footer class="text-white pt-5 pb-3 mt-5 w-100" style="background-color: #1b5299 !important; border-top: 4px solid #e67e22 !important;">
-        <div class="container-fluid container-lg">
-            <div class="row g-4 text-end">
-                <div class="col-lg-3 col-md-6">
-                    <div class="mb-2 bg-white p-2 rounded d-inline-block">
-                        <img src="{% static 'shop/images/kenan_logo.png' %}" alt="متجر كنان" class="cropped-logo">
-                    </div>
-                    <p class="text-white-50 small mb-3">متجر كنان  - خيارك الأول للحصول على أفضل المنتجات بأعلى جودة وأنسب سعر في عدن وكافة المناطق.</p>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <h6 class="fw-bold mb-3" style="color: #e67e22;">روابط سريعة</h6>
-                    <ul class="list-unstyled text-white-50 small lh-lg">
-                        <li><a href="#" class="text-decoration-none text-white-50">من نحن</a></li>
-                        <li><a href="#" class="text-decoration-none text-white-50">الصيانة والدعم</a></li>
-                        <li><a href="{% url 'product_list' %}" class="text-decoration-none text-white-50">جميع المنتجات</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <h6 class="fw-bold mb-3" style="color: #e67e22;">سياسات المتجر</h6>
-                    <ul class="list-unstyled text-white-50 small lh-lg">
-                        <li><a href="#" class="text-decoration-none text-white-50">سياسة الخصوصية</a></li>
-                        <li><a href="#" class="text-decoration-none text-white-50">شروط الاستخدام</a></li>
-                        <li><a href="#" class="text-decoration-none text-white-50">سياسة الإرجاع والترجيع</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <h6 class="fw-bold mb-3" style="color: #e67e22;">تواصل معنا</h6>
-                    <ul class="list-unstyled text-white-50 small lh-lg">
-                        <li><i class="fa-solid fa-phone me-2"></i> 784365557</li>
-                        <li><i class="fa-solid fa-envelope me-2"></i> kenan.ie.ye@gmail.com</li>
-                        <li><i class="fa-solid fa-location-dot me-2"></i> عدن، اليمن</li>
-                        <li><i class="fa-solid fa-location-dot me-2"></i> الصين</li>
-                    </ul>
-                </div>
-            </div>
-
-            <hr class="my-4 border-light opacity-25">
-            <div class="text-center text-white-50 small">
-                جميع الحقوق محفوظة لـ <strong class="text-white">متجر كنان</strong> &copy; 2026
-            </div>
-        </div>
-    </footer>
+    {% include 'shop/includes/footer.html' %}
 </div>
+ {% include 'shop/includes/about_modal.html' %}
 
 <!-- زر الواتساب -->
 <a href="https://wa.me/8615558681807" class="whatsapp-float" target="_blank" title="تواصل معنا عبر واتساب">
     <i class="fa-brands fa-whatsapp"></i>
 </a>
 
-<!-- القائمة الجانبية للموبايل -->
-<div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu">
-    <div class="offcanvas-header text-white" style="background-color: #1b5299;">
-        <h5 class="offcanvas-title fw-bold">
-            <i class="fa-solid fa-store me-2" style="color: #e67e22;"></i> متجر كنان
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
-    </div>
-    <div class="offcanvas-body p-0">
-        <div class="p-3 bg-light border-bottom">
-            <form action="{% url 'product_list' %}" method="GET">
-                <div class="input-group">
-                    <input type="text" name="q" class="form-control" placeholder="ابحث عن منتج...">
-                    <button class="btn btn-kenan-orange" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-                </div>
-            </form>
-        </div>
-        <div class="list-group list-group-flush">
-            <a href="{% url 'home' %}" class="list-group-item list-group-item-action py-3">الرئيسية</a>
-            <a href="{% url 'product_list' %}" class="list-group-item list-group-item-action py-3">فئات المنتجات</a>
-            <a href="{% url 'cart_detail' %}" class="list-group-item list-group-item-action py-3">سلة التسوق</a>
-            {% if request.user.is_authenticated %}
-                <a href="{% url 'customer_profile' %}" class="list-group-item list-group-item-action py-3">حسابي</a>
-            {% else %}
-                <a href="{% url 'login' %}" class="list-group-item list-group-item-action py-3">تسجيل الدخول</a>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
+{% include 'shop/includes/mobile_menu.html' %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-{% block extra_js %}{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            let query = this.value.trim();
+
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                searchResults.classList.add('d-none');
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            // إرسال طلب AJAX إلى مسار الـ live_search
+            fetch(`{% url 'live_search' %}?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    searchResults.innerHTML = '';
+                    if (data.products && data.products.length > 0) {
+                        data.products.forEach(product => {
+                            let item = document.createElement('a');
+                            item.href = product.url;
+                            item.className = 'd-flex align-items-center p-2 border-bottom text-decoration-none text-dark dropdown-item';
+
+                            let imgHtml = product.image_url ? `<img src="${product.image_url}" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">` : '';
+                            
+                            item.innerHTML = `
+                                ${imgHtml}
+                                <div>
+                                    <div class="fw-bold small">${product.name}</div>
+                                    <div class="text-danger small">${product.price}$</div>
+                                </div>
+                            `;
+                            searchResults.appendChild(item);
+                        });
+                        searchResults.classList.remove('d-none');
+                        searchResults.style.display = 'block';
+                    } else {
+                        searchResults.innerHTML = '<div class="p-2 text-muted small text-center">لا توجد نتائج مطابقة</div>';
+                        searchResults.classList.remove('d-none');
+                        searchResults.style.display = 'block';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        // إخفاء النتائج عند النقر خارج صندوق البحث
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('d-none');
+                searchResults.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
 </body>
 </html>

@@ -88,4 +88,11 @@
         </div>
     </div>
 </div>
+<script>
+    document.getElementById('main-category-select').addEventListener('change', function() {
+        var categoryId = this.value;
+        // الكود المسؤول عن جلب وتحديث الفئات الفرعية المرتبطة بالفئة الرئيسية المحددة
+        console.log("Selected Main Category ID: ", categoryId);
+    });
+</script>
 {% endblock %}

@@ -40,4 +40,8 @@ urlpatterns = [
     path('merchant/products/edit/<int:pk>/', views.edit_product, name='edit_product'),
     path('merchant/products/delete/<int:pk>/', views.delete_product, name='delete_product'),
     path('merchant/import-product/', views.import_product_from_url, name='import_product_from_url'),
+    # أضف هذين السطرين هنا لتفعيل أزرار الإكسل:
+    path('merchant/import-excel/', views.import_excel, name='import-excel'),
+    path('merchant/download-template/', views.download_template, name='download-template'),
+    path('live-search/', views.live_search, name='live_search'),
 ]   

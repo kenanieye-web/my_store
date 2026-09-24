@@ -1,0 +1,26 @@
+{% load static %}
+<!-- 2. الهيدر الأوسط (الشعار + البحث + الحساب) -->
+        <div class="bg-white py-3 border-bottom w-100">
+            <div class
+            ="container-fluid container-lg d-flex align-items-center justify-content-between gap-3">
+                
+                <!-- الشعار -->
+                <div class="header-brand">
+                    <a class="navbar-brand m-0" href="{% url 'home' %}">
+                        <img src="{% static 'shop/images/kenan_logo.png' %}" alt="متجر كنان" class="cropped-logo">
+                    </a>
+                </div>
+
+                <!-- مربع البحث الفوري -->
+<div class="header-search d-none d-md-block mx-2 mx-lg-4 position-relative">
+    <form action="{% url 'product_list' %}" method="GET" class="position-relative w-100">
+        <input type="text" id="search-input" name="q" class="form-control rounded-pill bg-light border ps-5" placeholder="ابحث عن منتج..." autocomplete="off">
+        <button type="submit" class="btn position-absolute top-50 start-0 translate-middle-y ms-2 text-muted">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+    </form>
+    
+    <!-- قائمة النتائج المنسدلة للبحث الفوري -->
+    <div id="search-results" class="position-absolute w-100 bg-white border rounded-3 shadow-sm mt-1 d-none" style="z-index: 1050; max-height: 300px; overflow-y: auto;">
+    </div>
+</div>

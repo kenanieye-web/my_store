@@ -11,15 +11,13 @@
                     <i class="fa-solid fa-right-to-bracket me-2"></i> تسجيل الدخول
                 </h2>
                 
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-danger">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
+            
 
                 <form method="POST">
                     {% csrf_token %}
                     <div class="mb-3">
+
+            
                         <label class="form-label fw-bold">البريد الإلكتروني</label>
                        <input type="email" name="username" class="form-control" required placeholder="name@example.com">
                     </div>

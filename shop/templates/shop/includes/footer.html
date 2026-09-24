@@ -1,0 +1,47 @@
+{% load static %}
+<!-- الفوتر -->
+    <footer class="text-white pt-1 pb-1 mt-2 w-100" style="background-color: #1b5299 !important; border-top: 4px solid #e67e22 !important;">
+        <div class="container-fluid container-lg">
+            <div class="row g-2 text-end">
+                <div class="col-lg-3 col-md-6">
+                    <div class="mb-2 bg-white p-2 rounded d-inline-block">
+                        <img src="{% static 'shop/images/kenan_logo.png' %}" alt="متجر كنان" class="cropped-logo">
+                    </div>
+                    <p class="text-white-50 small mb-3">متجر كنان  - خيارك الأول للحصول على أفضل المنتجات بأعلى جودة وأنسب سعر .</p>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="fw-bold mb-1" style="color: #e67e22;">روابط سريعة</h6>
+                    <ul class="list-unstyled text-white-50 small lh-lg">
+                        <li><a href="#" class="text-decoration-none text-white-50">من نحن</a></li>
+                        <li><a href="#" class="text-decoration-none text-white-50">الصيانة والدعم</a></li>
+                        <li><a href="{% url 'product_list' %}" class="text-decoration-none text-white-50">جميع المنتجات</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-4">
+                    <h6 class="fw-bold mb-3" style="color: #e67e22;">سياسات المتجر</h6>
+                    <ul class="list-unstyled text-white-50 small lh-lg">
+                        <li><a href="#" class="text-decoration-none text-white-50">سياسة الخصوصية</a></li>
+                        <li><a href="#" class="text-decoration-none text-white-50">شروط الاستخدام</a></li>
+                        <li><a href="#" class="text-decoration-none text-white-50">سياسة الإرجاع والترجيع</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="fw-bold mb-3" style="color: #e67e22;">تواصل معنا</h6>
+                    <ul class="list-unstyled text-white-50 small lh-lg">
+                        <li><i class="fa-solid fa-phone me-2"></i> 784365557</li>
+                        <li><i class="fa-solid fa-envelope me-2"></i> kenan.ie.ye@gmail.com</li>
+                        <li><i class="fa-solid fa-location-dot me-2"></i> عدن، اليمن</li>
+                        <li><i class="fa-solid fa-location-dot me-2"></i> الصين</li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr class="my-4 border-light opacity-25">
+            <div class="text-center text-white-50 small">
+                جميع الحقوق محفوظة لـ <strong class="text-white">متجر كنان</strong> &copy; 2026
+            </div>
+        </div>
+    </footer>

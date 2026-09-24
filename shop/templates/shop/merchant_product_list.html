@@ -5,9 +5,21 @@
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="fa-solid fa-boxes-stacked me-2"></i> إدارة منتجات المتجر</h2>
-        <a href="{% url 'add_product' %}" class="btn btn-success">
-            <i class="fa-solid fa-plus me-1"></i> إضافة منتج جديد
-        </a>
+        
+        <!-- مجموعة الأزرار (الإضافة + نموذج الإكسل + استيراد الإكسل) -->
+        <div class="d-flex gap-2">
+            <a href="{% url 'add_product' %}" class="btn btn-success">
+                <i class="fa-solid fa-plus me-1"></i> إضافة منتج جديد
+            </a>
+            
+            <a href="{% url 'download-template' %}" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-file-excel me-1"></i> نموذج Excel
+            </a>
+            
+            <a href="{% url 'import-excel' %}" class="btn btn-outline-primary">
+                <i class="fa-solid fa-file-import me-1"></i> استيراد Excel
+            </a>
+        </div>
     </div>
 
     <!-- نموذج الاستيراد السريع عبر الرابط -->
@@ -24,6 +36,7 @@
             </form>
         </div>
     </div>
+
     <div class="card shadow-sm border-0">
         <div class="card-body">
             <div class="table-responsive">

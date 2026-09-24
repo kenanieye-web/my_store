@@ -34,10 +34,10 @@
                     {% csrf_token %}
                     <div class="mb-3">
                         <select name="status" class="form-select">
-                            <option value="جديد" {% if order.status == 'جديد' or order.status == 'new' %}selected{% endif %}>جديد</option>
-                            <option value="جاري الشحن" {% if order.status == 'جاري الشحن' or order.status == 'shipping' or order.status == 'قيد الشحن' %}selected{% endif %}>جاري الشحن</option>
-                            <option value="تم التوصيل" {% if order.status == 'تم التوصيل' or order.status == 'delivered' %}selected{% endif %}>تم التوصيل</option>
-                            <option value="ملغي" {% if order.status == 'ملغي' or order.status == 'canceled' %}selected{% endif %}>ملغي</option>
+                            <option value="new">جديد</option>
+                            <option value="shipping">جاري الشحن / قيد الشحن</option>
+                            <option value="delivered">تم التوصيل</option>
+                            <option value="canceled">ملغي</option>
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 fw-bold">حفظ التغييرات</button>

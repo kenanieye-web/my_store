@@ -53,7 +53,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.media',  # تمكين الميديا داخل القوالب
+                'django.template.context_processors.media',
+                'shop.context_processors.nav_categories',
+'shop.context_processors.cart_summary', 
+                  # تمكين الميديا داخل القوالب
             ],
         },
     },
@@ -115,11 +118,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Email
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # حماية النطاق والسماح بطلب الدخول عبر بروتوكول الآمان والنطاق الخاص بك
 CSRF_TRUSTED_ORIGINS = ['https://kenan2026.pythonanywhere.com']
 AUTH_USER_MODEL = 'shop.CustomUser'

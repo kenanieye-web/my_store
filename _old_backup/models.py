@@ -95,6 +95,9 @@ class Product(django.db.models.Model):
     video = django.db.models.FileField(upload_to='products/videos/', blank=True, null=True, verbose_name="فيديو المنتج", help_text="يمكنك رفع فيديو للمنتج (MP4)")
     is_available = django.db.models.BooleanField(default=True, verbose_name="متاح للبيع")
     stock = django.db.models.IntegerField(default=0, verbose_name="المخزون")
+    colors = django.db.models.CharField(max_length=200, blank=True, null=True, verbose_name="الألوان المتاحة")
+    rating = django.db.models.FloatField(default=5.0, verbose_name="تقييم المنتج")
+    reviews_count = django.db.models.IntegerField(default=0, verbose_name="عدد التقييمات")
     created_at = django.db.models.DateTimeField(auto_now_add=True, verbose_name="تاريخ الإضافة")
 
     class Meta:
