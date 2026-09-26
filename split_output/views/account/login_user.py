@@ -24,4 +24,4 @@ def login_user(request):
     else:
         form = CustomerLoginForm()
         
-    return render(request, 'shop/login.html', {'form': form})
+    return render(request, 'shop/accounts/login.html', {'form': form})

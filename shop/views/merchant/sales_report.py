@@ -47,4 +47,4 @@ def sales_report(request):
         'top_selling_items': top_selling_items,
         'selected_period': period,
     }
-    return render(request, 'shop/sales_report.html', context)
+    return render(request, 'shop/merchant/sales_report.html', context)

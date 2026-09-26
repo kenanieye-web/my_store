@@ -8,4 +8,4 @@ def cart_detail(request):
     cart = None
     if cart_id:
         cart = Cart.objects.filter(id=cart_id).prefetch_related('items__product').first()
-    return render(request, 'shop/cart_detail.html', {'cart': cart})
+    return render(request, 'shop/cart/cart_detail.html', {'cart': cart})

@@ -34,7 +34,7 @@ def checkout(request):
 
         if not all([full_name, city, address, phone]):
             messages.error(request, "يرجى ملء جميع حقول الشحن المطلوبة.")
-            return render(request, 'shop/checkout.html', {
+            return render(request, 'shop/cart/checkout.html', {
                 'cart': cart,
                 'total_price': total_price,
                 'initial_data': {'full_name': full_name, 'city': city, 'address': address, 'phone': phone},
@@ -70,7 +70,7 @@ def checkout(request):
         messages.success(request, f"تم إتمام طلبك بنجاح! رقم الطلب #{order.id}")
         return redirect('order_success', order_id=order.id)
 
-    return render(request, 'shop/checkout.html', {
+    return render(request, 'shop/cart/checkout.html', {
         'cart': cart,
         'total_price': total_price,
         'initial_data': initial_data,

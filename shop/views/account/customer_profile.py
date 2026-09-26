@@ -12,4 +12,4 @@ def customer_profile(request):
         'customer': customer,
         'orders': orders,
     }
-    return render(request, 'shop/customer_profile.html', context)
+    return render(request, 'shop/accounts/customer_profile.html', context)

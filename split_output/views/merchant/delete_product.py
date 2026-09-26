@@ -14,4 +14,4 @@ def delete_product(request, pk):
         product.delete()
         messages.success(request, f"تم حذف المنتج '{product_name}' بنجاح.")
         return redirect('merchant_product_list')
-    return render(request, 'shop/confirm_delete_product.html', {'product': product})
+    return render(request, 'shop/merchant/confirm_delete_product.html', {'product': product})

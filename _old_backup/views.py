@@ -70,7 +70,7 @@ def product_list(request, category_slug=None):
         'selected_category': category_id,
         'search_query': search_query,
     }
-    return render(request, 'shop/product_list.html', context)
+    return render(request, 'shop/products/product_list.html', context)
 
 def product_detail(request, pk):
     """عرض تفاصيل منتج محدد"""
@@ -87,7 +87,7 @@ def product_detail(request, pk):
         'product': product,
         'related_products': related_products,
     }
-    return render(request, 'shop/product_detail.html', context)
+    return render(request, 'shop/products/product_detail.html', context)
 
 
 def live_search(request):
@@ -112,7 +112,7 @@ def live_search(request):
         'product': product,
         'related_products': related_products,
     }
-    return render(request, 'shop/product_detail.html', context)
+    return render(request, 'shop/products/product_detail.html', context)
 
 
 # --- إدارة سلة التسوق ---
@@ -158,7 +158,7 @@ def cart_detail(request):
     cart = None
     if cart_id:
         cart = Cart.objects.filter(id=cart_id).prefetch_related('items__product').first()
-    return render(request, 'shop/cart_detail.html', {'cart': cart})
+    return render(request, 'shop/cart/cart_detail.html', {'cart': cart})
 
 def remove_from_cart(request, item_id):
     """حذف عنصر محدد من السلة"""
@@ -215,7 +215,7 @@ def checkout(request):
 
         if not all([full_name, city, address, phone]):
             messages.error(request, "يرجى ملء جميع حقول الشحن المطلوبة.")
-            return render(request, 'shop/checkout.html', {'cart': cart, 'total_price': total_price})
+            return render(request, 'shop/cart/checkout.html', {'cart': cart, 'total_price': total_price})
 
         customer_profile = getattr(request.user, 'customer_profile', None) if request.user.is_authenticated else None
 
@@ -245,9 +245,9 @@ def checkout(request):
             del request.session['cart_id']
 
         messages.success(request, f"تم إتمام طلبك بنجاح! رقم الطلب #{order.id}")
-        return render(request, 'shop/order_success.html', {'order': order})
+        return render(request, 'shop/cart/order_success.html', {'order': order})
 
-    return render(request, 'shop/checkout.html', {'cart': cart, 'total_price': total_price})
+    return render(request, 'shop/cart/checkout.html', {'cart': cart, 'total_price': total_price})
 
 
 # --- نظام الحسابات والمستخدمين (المحدث بالبريد الإلكتروني والنموذج الآمن) ---
@@ -267,7 +267,7 @@ def register_user(request):
     else:
         form = CustomerSignUpForm()
     
-    return render(request, 'shop/register.html', {'form': form})
+    return render(request, 'shop/accounts/register.html', {'form': form})
 
 def login_user(request):
     """تسجيل الدخول للعميل عبر البريد الإلكتروني"""
@@ -289,7 +289,7 @@ def login_user(request):
     else:
         form = CustomerLoginForm()
         
-    return render(request, 'shop/login.html', {'form': form})
+    return render(request, 'shop/accounts/login.html', {'form': form})
 
 def logout_user(request):
     """تسجيل الخروج"""
@@ -306,7 +306,7 @@ def customer_profile(request):
         'customer': customer,
         'orders': orders,
     }
-    return render(request, 'shop/customer_profile.html', context)
+    return render(request, 'shop/accounts/customer_profile.html', context)
 
 # --- لوحة تحكم التاجر وإدارة المتجر (مخصصة للطاقم الإداري فقط) ---
 
@@ -376,25 +376,25 @@ def sales_report(request):
         'top_selling_items': top_selling_items,
         'selected_period': period,
     }
-    return render(request, 'shop/sales_report.html', context)
+    return render(request, 'shop/merchant/sales_report.html', context)
 
 @staff_required
 def customer_list(request):
     """عرض قائمة العملاء والبيانات المرتبطة بهم"""
     customers = Customer.objects.select_related('user').all().order_by('-id')
-    return render(request, 'shop/customer_list.html', {'customers': customers})
+    return render(request, 'shop/merchant/customer_list.html', {'customers': customers})
 
 @staff_required
 def staff_user_list(request):
     """عرض طاقم الإدارة"""
     staff_users = CustomUser.objects.filter(Q(is_staff=True) | Q(is_superuser=True)).order_by('-date_joined')
-    return render(request, 'shop/staff_user_list.html', {'staff_users': staff_users})
+    return render(request, 'shop/merchant/staff_user_list.html', {'staff_users': staff_users})
 
 @staff_required
 def order_list(request):
     """قائمة جميع الطلبات للتاجر"""
     orders = Order.objects.all().order_by('-created_at')
-    return render(request, 'shop/order_list.html', {'orders': orders})
+    return render(request, 'shop/orders/order_list.html', {'orders': orders})
 
 @staff_required
 def order_detail(request, pk):
@@ -409,13 +409,13 @@ def order_detail(request, pk):
             messages.success(request, f"تم تحديث حالة الطلب #{order.id} بنجاح.")
             return redirect('order_detail', pk=order.id)
 
-    return render(request, 'shop/order_detail.html', {'order': order})
+    return render(request, 'shop/orders/order_detail.html', {'order': order})
 
 @staff_required
 def merchant_product_list(request):
     """إدارة المنتجات للتاجر"""
     products = Product.objects.select_related('category').all().order_by('-id')
-    return render(request, 'shop/merchant_product_list.html', {'products': products})
+    return render(request, 'shop/merchant/merchant_product_list.html', {'products': products})
 
 @staff_required
 def add_product(request):
@@ -429,7 +429,7 @@ def add_product(request):
     else:
         form = ProductForm()
     
-    return render(request, 'shop/add_product.html', {'form': form})
+    return render(request, 'shop/merchant/add_product.html', {'form': form})
 
 @staff_required
 def edit_product(request, pk):
@@ -444,7 +444,7 @@ def edit_product(request, pk):
     else:
         form = ProductForm(instance=product)
         
-    return render(request, 'shop/edit_product.html', {'form': form, 'product': product})
+    return render(request, 'shop/merchant/edit_product.html', {'form': form, 'product': product})
 
 @staff_required
 def delete_product(request, pk):
@@ -455,7 +455,7 @@ def delete_product(request, pk):
         product.delete()
         messages.success(request, f"تم حذف المنتج '{product_name}' بنجاح.")
         return redirect('merchant_product_list')
-    return render(request, 'shop/confirm_delete_product.html', {'product': product})
+    return render(request, 'shop/merchant/confirm_delete_product.html', {'product': product})
 
 # --- دالة سحب واستيراد المنتجات تلقائياً من الروابط (مثل علي بابا) ---
 

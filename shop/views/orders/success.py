@@ -8,4 +8,4 @@ def order_success(request, order_id):
     context = {
         'order': order,
     }
-    return render(request, 'shop/order_success.html', context)
+    return render(request, 'shop/cart/order_success.html', context)

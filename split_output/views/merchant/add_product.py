@@ -17,4 +17,4 @@ def add_product(request):
     else:
         form = ProductForm()
     
-    return render(request, 'shop/add_product.html', {'form': form})
+    return render(request, 'shop/merchant/add_product.html', {'form': form})

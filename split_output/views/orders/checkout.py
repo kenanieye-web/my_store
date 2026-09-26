@@ -24,7 +24,7 @@ def checkout(request):
 
         if not all([full_name, city, address, phone]):
             messages.error(request, "يرجى ملء جميع حقول الشحن المطلوبة.")
-            return render(request, 'shop/checkout.html', {'cart': cart, 'total_price': total_price})
+            return render(request, 'shop/cart/checkout.html', {'cart': cart, 'total_price': total_price})
 
         customer_profile = getattr(request.user, 'customer_profile', None) if request.user.is_authenticated else None
 
@@ -54,6 +54,6 @@ def checkout(request):
             del request.session['cart_id']
 
         messages.success(request, f"تم إتمام طلبك بنجاح! رقم الطلب #{order.id}")
-        return render(request, 'shop/order_success.html', {'order': order})
+        return render(request, 'shop/cart/order_success.html', {'order': order})
 
-    return render(request, 'shop/checkout.html', {'cart': cart, 'total_price': total_price})
+    return render(request, 'shop/cart/checkout.html', {'cart': cart, 'total_price': total_price})

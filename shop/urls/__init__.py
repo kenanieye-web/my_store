@@ -18,6 +18,7 @@ from shop.views.merchant.import_excel import import_product_from_url
 from shop.views.merchant.staff_user_list import staff_user_list
 from shop.views.merchant.coupons import merchant_coupons_list
 from shop.views.merchant import delete_product
+from shop.views.merchant import add_staff, edit_staff_permissions
 from shop.views.merchant.category_list import merchant_category_list
 from shop.views.merchant.export_orders import (
     export_orders_excel, 
@@ -70,6 +71,8 @@ urlpatterns = [
     path('merchant/categories/', merchant_category_list, name='merchant_category_list'),
     path('merchant/coupons/', merchant_coupons_list, name='merchant_coupons_list'),
     path('merchant/product/delete/<int:pk>/', delete_product, name='delete_product'),
+    path('merchant/staff/add/', add_staff, name='add_staff'),
+    path('merchant/staff/<int:user_id>/permissions/', edit_staff_permissions, name='edit_staff_permissions'),
     #path('merchant/promotions/', promotions_list, name='promotions_list'),
     #path('merchant/loyalty/', loyalty_program, name='loyalty_program'),
     #path('merchant/banners/', banners_list, name='banners_list'),

@@ -1,0 +1,32 @@
+{% extends 'admin/veltrix_base.html' %}
+{% block title %}إضافة موظف - Veltrix{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">إضافة موظف جديد</h3>
+        <p class="text-muted mb-0">أدخل بيانات الموظف الجديد لإنشاء حسابه</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">اسم المستخدم</label>
+                <input type="text" name="username" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">البريد الإلكتروني</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">كلمة المرور</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">إضافة الموظف</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

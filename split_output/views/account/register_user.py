@@ -19,4 +19,4 @@ def register_user(request):
     else:
         form = CustomerSignUpForm()
     
-    return render(request, 'shop/register.html', {'form': form})
+    return render(request, 'shop/accounts/register.html', {'form': form})

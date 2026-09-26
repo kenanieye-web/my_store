@@ -19,4 +19,4 @@ def edit_product(request, pk):
     else:
         form = ProductForm(instance=product)
         
-    return render(request, 'shop/edit_product.html', {'form': form, 'product': product})
+    return render(request, 'shop/merchant/edit_product.html', {'form': form, 'product': product})

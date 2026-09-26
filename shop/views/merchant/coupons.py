@@ -25,4 +25,4 @@ def merchant_coupons_list(request):
     context = {
         'coupons': coupons,
     }
-    return render(request, 'shop/merchant_coupons_list.html', context)
+    return render(request, 'shop/merchant/merchant_coupons_list.html', context)

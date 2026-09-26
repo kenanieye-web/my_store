@@ -8,4 +8,4 @@ from shop.views.merchant.staff_required import staff_required
 def order_list(request):
     """قائمة جميع الطلبات للتاجر"""
     orders = Order.objects.all().order_by('-created_at')
-    return render(request, 'shop/order_list.html', {'orders': orders})
+    return render(request, 'shop/orders/order_list.html', {'orders': orders})

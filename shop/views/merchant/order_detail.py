@@ -18,4 +18,4 @@ def order_detail(request, pk):
             messages.success(request, f"تم تحديث حالة الطلب #{order.id} بنجاح.")
             return redirect('order_detail', pk=order.id)
 
-    return render(request, 'shop/order_detail.html', {'order': order})
+    return render(request, 'shop/orders/order_detail.html', {'order': order})

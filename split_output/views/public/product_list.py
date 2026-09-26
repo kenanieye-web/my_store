@@ -33,4 +33,4 @@ def product_list(request, category_slug=None):
         'selected_category': category_id,
         'search_query': search_query,
     }
-    return render(request, 'shop/product_list.html', context)
+    return render(request, 'shop/products/product_list.html', context)

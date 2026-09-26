@@ -24,4 +24,4 @@ def live_search(request):
         'product': product,
         'related_products': related_products,
     }
-    return render(request, 'shop/product_detail.html', context)
+    return render(request, 'shop/products/product_detail.html', context)

@@ -27,4 +27,4 @@ def merchant_category_list(request):
         'categories': categories,
         'main_categories': main_categories,
     }
-    return render(request, 'shop/merchant_category_list.html', context)
+    return render(request, 'shop/merchant/merchant_category_list.html', context)

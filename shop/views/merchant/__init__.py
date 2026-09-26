@@ -17,3 +17,5 @@ from .promotions_list import promotions_list
 from .loyalty_program import loyalty_program
 from .banners_list import banners_list
 from .affiliate_marketing import affiliate_marketing
+from .add_staff import add_staff
+from .edit_staff_permissions import edit_staff_permissions

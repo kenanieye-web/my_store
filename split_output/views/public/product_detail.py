@@ -12,4 +12,4 @@ def product_detail(request, pk):
         'product': product,
         'related_products': related_products,
     }
-    return render(request, 'shop/product_detail.html', context)
+    return render(request, 'shop/products/product_detail.html', context)

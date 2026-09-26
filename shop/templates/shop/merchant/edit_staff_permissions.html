@@ -1,0 +1,30 @@
+{% extends 'admin/veltrix_base.html' %}
+{% block title %}صلاحيات {{ staff_user.username }} - Veltrix{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">صلاحيات الموظف: {{ staff_user.username }}</h3>
+        <p class="text-muted mb-0">حدد الصلاحيات التي تريد منحها لهذا الموظف</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+            {% for perm in all_permissions %}
+                <div class="form-check mb-2">
+                    <input type="checkbox" class="form-check-input" name="permissions"
+                        value="{{ perm.id }}" id="perm_{{ perm.id }}"
+                        {% if perm.id in current_permissions_ids %}checked{% endif %}>
+                    <label class="form-check-label" for="perm_{{ perm.id }}">
+                        {{ perm.name }}
+                    </label>
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary mt-3">حفظ الصلاحيات</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
