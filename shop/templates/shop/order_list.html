@@ -10,6 +10,15 @@
             <i class="fa-solid fa-arrow-right me-1"></i> العودة للوحة التحكم
         </a>
     </div>
+    
+    <div class="mb-3 d-flex gap-2">
+        <a href="{% url 'export_orders_excel' %}" class="btn btn-success btn-sm">
+            <i class="fa fa-file-excel"></i> تصدير Excel
+        </a>
+        <a href="{% url 'export_orders_pdf' %}" class="btn btn-danger btn-sm">
+            <i class="fa fa-file-pdf"></i> تصدير PDF
+        </a>
+    </div>
 
     <div class="card border-0 shadow-sm p-3">
         <div class="table-responsive">
@@ -43,9 +52,22 @@
                         </td>
                         <td class="small text-muted">{{ order.created_at|date:"Y-m-d H:i" }}</td>
                         <td>
-                            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-primary">
-                                <i class="fa-solid fa-eye me-1"></i> عرض التفاصيل
-                            </a>
+                            <div class="d-flex align-items-center gap-1">
+                                <!-- زر عرض التفاصيل -->
+                                <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-primary" title="عرض التفاصيل">
+                                    <i class="fa-solid fa-eye me-1"></i> تفاصيل
+                                </a>
+                                
+                                <!-- زر تصدير PDF للطلب الفردي -->
+                                <a href="{% url 'export_single_order_pdf' order.id %}" class="btn btn-sm btn-danger" title="تصدير PDF">
+                                    <i class="fa fa-file-pdf"></i> PDF
+                                </a>
+                                
+                                <!-- زر تصدير Excel للطلب الفردي -->
+                                <a href="{% url 'export_single_order_excel' order.id %}" class="btn btn-sm btn-success" title="تصدير Excel">
+                                    <i class="fa fa-file-excel"></i> Excel
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}

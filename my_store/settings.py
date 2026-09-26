@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'shop',
 ]
 
@@ -108,9 +109,11 @@ USE_THOUSAND_SEPARATOR = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+STATICFILES_DIRS = [
+    BASE_DIR / 'shop/static',
+]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files (Uploaded by user)
 MEDIA_URL = '/media/'

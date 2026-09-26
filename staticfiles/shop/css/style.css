@@ -1,7 +1,7 @@
 .hero-split {
   display: flex;
   flex-wrap: wrap;
-  min-height: 420px;
+  min-height: 220px;
 }
 
 .hero-half {
@@ -23,11 +23,10 @@
 .hero-overlay {
   width: 100%;
   height: 100%;
-  min-height: 420px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 30px 20px;
 }
 
 .hero-shopping .hero-overlay {
@@ -45,14 +44,14 @@
 }
 
 .hero-content h2 {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: bold;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .hero-content p {
-  font-size: 1.1rem;
-  margin-bottom: 25px;
+  font-size: 1rem;
+  margin-bottom: 18px;
   opacity: 0.95;
 }
 
@@ -62,7 +61,7 @@
   gap: 8px;
   background: #f7941e;
   color: #fff;
-  padding: 12px 28px;
+  padding: 10px 24px;
   border-radius: 8px;
   font-weight: bold;
   text-decoration: none;
@@ -86,4 +85,25 @@
   .hero-half {
     flex: 1 1 100%;
   }
+}
+/* تنسيق بطاقات المميزات لتكون أنحف وأكثر احترافية */
+.feature-card, .card, .row .col-md-4 > div {
+  padding: 20px 15px !important;
+  min-height: auto !important;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* تأثير عند تمرير الفأرة على البطاقة */
+.feature-card:hover, .card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* تصغير حجم الأيقونات والمسافات لتناسب الارتفاع الجديد */
+.feature-card img, .feature-card i, .card i {
+  font-size: 2rem;
+  margin-bottom: 10px;
 }

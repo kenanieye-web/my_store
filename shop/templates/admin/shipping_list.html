@@ -1,0 +1,167 @@
+{% extends 'admin/veltrix_base.html' %}
+{% load static %}
+
+{% block title %}الشحن والتوصيل - متجر كنان{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0">الشحن والتوصيل</h4>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addShippingModal">
+        <i class="bx bx-plus me-1"></i> إضافة طريقة شحن
+    </button>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 text-end">
+            <thead class="table-light">
+                <tr>
+                    <th>الاسم</th>
+                    <th>شركة التوصيل</th>
+                    <th>التكلفة</th>
+                    <th>مدة التوصيل</th>
+                    <th>المدن المشمولة</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for method in methods %}
+                <tr>
+                    <td class="fw-bold">{{ method.name }}</td>
+                    <td>{{ method.company_name|default:"—" }}</td>
+                    <td>{{ method.cost }} ر.ي</td>
+                    <td>{{ method.estimated_days }} يوم</td>
+                    <td>{{ method.covered_cities|default:"كل المدن" }}</td>
+                    <td>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="toggle">
+                            <input type="hidden" name="method_id" value="{{ method.id }}">
+                            {% if method.is_active %}
+                                <button type="submit" class="btn btn-sm btn-success-subtle text-success border-0">مفعّلة</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-light text-muted">معطّلة</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                    <td class="d-flex gap-2">
+                        <button class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#editShippingModal{{ method.id }}">
+                            <i class="bx bx-edit"></i>
+                        </button>
+                        <form method="post" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="method_id" value="{{ method.id }}">
+                            <button type="submit" class="btn btn-sm btn-danger-subtle text-danger border-0">
+                                <i class="bx bx-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+
+                <!-- Modal تعديل -->
+                <div class="modal fade" id="editShippingModal{{ method.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <form method="post" class="modal-content">
+                            {% csrf_token %}
+                            <div class="modal-header">
+                                <h5 class="modal-title">تعديل طريقة الشحن</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="action" value="edit">
+                                <input type="hidden" name="method_id" value="{{ method.id }}">
+                                <div class="mb-3">
+                                    <label class="form-label">الاسم</label>
+                                    <input type="text" name="name" value="{{ method.name }}" required class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">شركة التوصيل</label>
+                                    <input type="text" name="company_name" value="{{ method.company_name }}" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">التكلفة</label>
+                                    <input type="number" step="0.01" name="cost" value="{{ method.cost }}" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">مدة التوصيل (أيام)</label>
+                                    <input type="number" name="estimated_days" value="{{ method.estimated_days }}" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">المدن المشمولة (مفصولة بفاصلة)</label>
+                                    <textarea name="covered_cities" class="form-control">{{ method.covered_cities }}</textarea>
+                                </div>
+                                <div class="form-check">
+                                    <input type="checkbox" name="is_active" class="form-check-input" id="activeEdit{{ method.id }}" {% if method.is_active %}checked{% endif %}>
+                                    <label class="form-check-label" for="activeEdit{{ method.id }}">مفعّلة</label>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                                <button type="submit" class="btn btn-primary">حفظ</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-4">لا توجد طرق شحن مضافة بعد</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal إضافة -->
+<div class="modal fade" id="addShippingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة طريقة شحن جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="action" value="add">
+                <div class="mb-3">
+                    <label class="form-label">الاسم</label>
+                    <input type="text" name="name" required class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">شركة التوصيل</label>
+                    <input type="text" name="company_name" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">التكلفة</label>
+                    <input type="number" step="0.01" name="cost" value="0" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">مدة التوصيل (أيام)</label>
+                    <input type="number" name="estimated_days" value="1" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">المدن المشمولة (مفصولة بفاصلة)</label>
+                    <textarea name="covered_cities" class="form-control" placeholder="اتركه فارغاً لتشمل كل المدن"></textarea>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" name="is_active" class="form-check-input" id="activeAdd" checked>
+                    <label class="form-check-label" for="activeAdd">مفعّلة</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                <button type="submit" class="btn btn-primary">إضافة</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

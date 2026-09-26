@@ -1,0 +1,14 @@
+{% extends "admin/change_form.html" %}
+
+{% object-tools %}
+  {% block object-tools-items %}
+    {{ block.super }}
+    {% if original.pk %}
+      <li>
+        <a href="{% url 'admin:order-invoice-pdf' original.pk %}" class="historyview" target="_blank" style="background-color: #28a745; color: white;">
+          طباعة فاتورة PDF
+        </a>
+      </li>
+    {% endif %}
+  {% endblock %}
+{% endif %}

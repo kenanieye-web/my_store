@@ -1,26 +1,38 @@
- <!-- 1. الشريط العلوي Top Bar -->
-        <div class="top-bar text-white py-2 small w-100" style="background-color: #15427d;">
-            <div class="container-fluid container-lg d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-3 ms-auto">
-                    <span class="text-white-50"><i class="fa-regular fa-sun"></i> متجر كنان  </span>
-                    <div class="dropdown">
-                        <button class="btn btn-sm dropdown-toggle text-white border-0 py-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            عربي (YE)
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                            <li><a class="dropdown-item active" href="#">العربية (YE)</a></li>
-                            <li><a class="dropdown-item" href="#">English</a></li>
-                        </ul>
-                    </div>
-                    <div class="dropdown">
-                        <button class="btn btn-sm dropdown-toggle text-white border-0 py-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            $ USD
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                            <li><a class="dropdown-item active" href="#">USD ($)</a></li>
-                            <li><a class="dropdown-item" href="#">YER (ر.ي)</a></li>
-                        </ul>
-                    </div>
-                </div>
+{% load static %}
+<!-- 1. الشريط العلوي الرفيع الخاص بواجهة المتجر (اللغة / العملة / اسم المتجر) -->
+<div class="w-100 py-1" style="background-color: #1b5299 !important;">
+    <div class="container-fluid container-lg d-flex align-items-center justify-content-between flex-wrap">
+
+        <!-- اسم المتجر / أيقونة الإعدادات -->
+        <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-gear text-white" style="font-size: 0.85rem;"></i>
+            <span class="text-white small fw-bold">متجر كنان</span>
+        </div>
+
+        <!-- اللغة والعملة -->
+        <div class="d-flex align-items-center gap-3">
+            <!-- قائمة العملة -->
+            <div class="dropdown">
+                <button class="btn btn-sm text-white dropdown-toggle py-0 px-2 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.85rem;">
+                    <i class="fa-solid fa-coins me-1"></i> USD $
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm small">
+                    <li><a class="dropdown-item" href="#">USD $</a></li>
+                    <li><a class="dropdown-item" href="#">YER ﷼</a></li>
+                </ul>
+            </div>
+
+            <!-- قائمة اللغة -->
+            <div class="dropdown">
+                <button class="btn btn-sm text-white dropdown-toggle py-0 px-2 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.85rem;">
+                    <i class="fa-solid fa-globe me-1"></i> عربي (YE)
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm small">
+                    <li><a class="dropdown-item" href="#">عربي (YE)</a></li>
+                    <li><a class="dropdown-item" href="#">English (EN)</a></li>
+                </ul>
             </div>
         </div>
+
+    </div>
+</div>

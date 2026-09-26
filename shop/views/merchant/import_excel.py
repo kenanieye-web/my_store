@@ -21,3 +21,8 @@ def import_excel(request):
         return redirect('merchant_product_list')
     
     return render(request, 'shop/import_excel.html')
+
+
+# تعريف دالة مطابقة للرابط الذي يطلبه القالب لتجنب أي أخطاء
+def import_product_from_url(request):
+    return import_excel(request)

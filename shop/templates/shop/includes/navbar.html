@@ -1,77 +1,76 @@
- <!-- 3. شريط الملاحة -->
-        <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm py-0 w-100" style="background-color: #1b5299 !important; border-bottom: 4px solid #e67e22 !important;">
-            <div class="container-fluid container-lg">
+<!-- 3. شريط الملاحة -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm py-0 w-100" style="background-color: #1b5299 !important; border-bottom: 4px solid #e67e22 !important;">
+    <div class="container-fluid container-lg">
+        
+        <button class="navbar-toggler my-2 ms-auto" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-start" id="navbarMainLinks">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1 align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link nav-link-custom" href="{% url 'home' %}">الرئيسية</a>
+                </li>
                 
-                <button class="navbar-toggler my-2 ms-auto" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="collapse navbar-collapse justify-content-start" id="navbarMainLinks">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1 align-items-center">
-                        <li class="nav-item">
-                            <a class="nav-link nav-link-custom" href="{% url 'home' %}">الرئيسية</a>
-                        </li>
-                        
-                        <!-- القائمة المنسدلة لفئات المنتجات -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle nav-link-custom"
-                               href="javascript:void(0);"
-                               id="navbarDropdownMenuLink"
-                               role="button"
-                               data-bs-toggle="dropdown"
-                               aria-expanded="false">
-                                فئات المنتجات
-                            </a>
-                            <ul class="dropdown-menu shadow-lg border-0 py-2 text-end" aria-labelledby="navbarDropdownMenuLink">
-    <li>
-        <a class="dropdown-item fw-bold text-dark py-2" href="{% url 'product_list' %}">
-            <i class="fa-solid fa-bolt text-warning me-1"></i> جميع المنتجات
-        </a>
-    </li>
-    <li><hr class="dropdown-divider my-1"></li>
-
-    {% for cat in nav_categories %}
-        <li>
-            <!-- الرابط الرئيسي للفئة -->
-            <a class="dropdown-item fw-bold text-primary py-2" href="{% url 'product_list' %}?category={{ cat.slug }}">
-                {{ cat.name }}
-            </a>
-            
-            <!-- الفئات الفرعية إن وجدت -->
-            {% if cat.children.all %}
-                <ul class="list-unstyled ps-3">
-                    {% for subcat in cat.children.all %}
+                <!-- القائمة المنسدلة لفئات المنتجات -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle nav-link-custom"
+                       href="javascript:void(0);"
+                       id="navbarDropdownMenuLink"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false">
+                        فئات المنتجات
+                    </a>
+                    <ul class="dropdown-menu shadow-lg border-0 py-2 text-end" aria-labelledby="navbarDropdownMenuLink">
                         <li>
-                            <!-- الرابط الفرعي -->
-                            <a class="dropdown-item py-1 pe-4 text-secondary small" href="{% url 'product_list' %}?category={{ subcat.slug }}">
-                                <i class="fa-solid fa-angle-left me-1"></i> {{ subcat.name }}
+                            <a class="dropdown-item fw-bold text-dark py-2" href="{% url 'product_list' %}">
+                                <i class="fa-solid fa-bolt text-warning me-1"></i> جميع المنتجات
                             </a>
                         </li>
-                    {% endfor %} <!-- إغلاق حلقة الفرعي الصحيح -->
-                </ul>
-            {% endif %} <!-- إغلاق الشرط -->
-        </li>
-        {% if not forloop.last %}
-            <li><hr class="dropdown-divider my-1"></li>
-        {% endif %}
-    {% endfor %} <!-- إغلاق الحلقة الرئيسية -->
-</ul>
-                        </li>
-                        
-                        <li class="nav-item"><a class="nav-link nav-link-custom" href="#">العروض</a></li>
-                        <li class="nav-item">
-    <li class="nav-item">
-    <a class="nav-link nav-link-custom" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">من نحن</a>
-</li>
-                        <li class="nav-item dropdown">
-    <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="contactDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">تواصل معنا</a>
-    <ul class="dropdown-menu text-end shadow border-0 p-2" aria-labelledby="contactDropdown" style="min-width: 200px;">
-        <li><a class="dropdown-item py-2 fw-bold text-success" href="https://wa.me/8615558681807" target="_blank"><i class="fa-brands fa-whatsapp me-2"></i> واتساب</a></li>
-        <li><a class="dropdown-item py-2 fw-bold text-primary"href="mailto:kenan.ie.ye@gmail.com" href="tel:784365557"><i class="fa-solid fa-phone me-2"></i> الاتصال الهاتفي </a></li>
-        <li><a class="dropdown-item py-2 fw-bold text-dark" ><i class="fa-solid fa-envelope me-2"></i> البريد الالكتروني </a></li>
-    </ul>
-</li>
+                        <li><hr class="dropdown-divider my-1"></li>
+
+                        {% for cat in nav_categories %}
+                            <li>
+                                <a class="dropdown-item fw-bold text-primary py-2" href="{% url 'product_list' %}?category={{ cat.slug }}">
+                                    {{ cat.name }}
+                                </a>
+                                
+                                {% if cat.children.all %}
+                                    <ul class="list-unstyled ps-3">
+                                        {% for subcat in cat.children.all %}
+                                            <li>
+                                                <a class="dropdown-item py-1 pe-4 text-secondary small" href="{% url 'product_list' %}?category={{ subcat.slug }}">
+                                                    <i class="fa-solid fa-angle-left me-1"></i> {{ subcat.name }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </li>
+                            {% if not forloop.last %}
+                                <li><hr class="dropdown-divider my-1"></li>
+                            {% endif %}
+                        {% endfor %}
                     </ul>
-                </div>
-            </div>
-        </nav>
+                </li>
+                
+                <li class="nav-item"><a class="nav-link nav-link-custom" href="#">العروض</a></li>
+                
+                <li class="nav-item">
+                    <a class="nav-link nav-link-custom" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">من نحن</a>
+                </li>
+
+                <!-- قائمة تواصل معنا المُصححة بالكامل -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="contactDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">تواصل معنا</a>
+                    <ul class="dropdown-menu text-end shadow border-0 p-2" aria-labelledby="contactDropdown" style="min-width: 200px;">
+                        <li><a class="dropdown-item py-2 fw-bold text-success" href="https://wa.me/8615558681807" target="_blank"><i class="fa-brands fa-whatsapp me-2"></i> واتساب</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold text-primary" href="tel:+967784365557"><i class="fa-solid fa-phone me-2"></i> الاتصال الهاتفي</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold text-dark" href="mailto:kenan.ie.ye@gmail.com"><i class="fa-solid fa-envelope me-2"></i> البريد الالكتروني</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

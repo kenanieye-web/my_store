@@ -1,0 +1,264 @@
+{% extends 'admin/veltrix_base.html' %}
+{% load static %}
+
+{% block title %}لوحة التحكم الرئيسية - متجر كنان{% endblock %}
+
+{% block content %}
+<!-- ترحيب سريع وعنوان الصفحة -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold text-dark m-0">أهلاً بك، {{ request.user.first_name|default:request.user.username }} 👋</h4>
+        <p class="text-muted small mt-1">إليك نظرة شاملة على الأداء المالي والطلبات الواردة لمتجرك.</p>
+    </div>
+    <div>
+        <a href="{% url 'add_product' %}" class="btn btn-primary btn-sm px-3 py-2 shadow-sm">
+            <i class="bx bx-plus me-1"></i> إضافة منتج جديد
+        </a>
+    </div>
+</div>
+
+<!-- بطاقات الـ KPIs المالية والعامة (المقاييس الشاملة) -->
+<div class="row g-3 mb-4">
+    <!-- إجمالي المبيعات -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100 p-3 border-start border-primary border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted d-block small fw-bold mb-1">إجمالي المبيعات</span>
+                    <h3 class="fw-bold text-dark m-0">{{ total_sales|default:"0.00" }} <span class="fs-6 text-muted">ر.ي</span></h3>
+                </div>
+                <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
+                    <i class="bx bx-dollar-circle fs-3"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-success small fw-bold">
+                <i class="bx bx-up-arrow-alt"></i> +15% <span class="text-muted fw-normal">مقارنة بالشهر السابق</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- إجمالي الطلبات الكلي -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100 p-3 border-start border-success border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted d-block small fw-bold mb-1">إجمالي الطلبات الكلي</span>
+                    <h3 class="fw-bold text-dark m-0">{{ total_orders|default:"0" }}</h3>
+                </div>
+                <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success">
+                    <i class="bx bx-shopping-bag fs-3"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-success small fw-bold">
+                <i class="bx bx-check-circle"></i> طلبات نشطة ومكتملة
+            </div>
+        </div>
+    </div>
+
+    <!-- متوسط قيمة الطلب (AOV) -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100 p-3 border-start border-warning border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted d-block small fw-bold mb-1">متوسط قيمة الطلب</span>
+                    <h3 class="fw-bold text-dark m-0">{{ average_order_value|default:"0.00" }} <span class="fs-6 text-muted">ر.ي</span></h3>
+                </div>
+                <div class="bg-warning bg-opacity-10 p-3 rounded-circle text-warning">
+                    <i class="bx bx-line-chart fs-3"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-muted small">
+                معدل إنفاق العميل للطلب الواحد
+            </div>
+        </div>
+    </div>
+
+    <!-- العملاء الجدد -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100 p-3 border-start border-info border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted d-block small fw-bold mb-1">إجمالي العملاء</span>
+                    <h3 class="fw-bold text-dark m-0">{{ total_customers|default:"0" }}</h3>
+                </div>
+                <div class="bg-info bg-opacity-10 p-3 rounded-circle text-info">
+                    <i class="bx bx-group fs-3"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-info small fw-bold">
+                <i class="bx bx-user-plus"></i> عملاء مسجلين بالمتجر
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- قسم الرسم البياني والنشاط السريع -->
+<div class="row g-4 mb-4">
+    <!-- رسم بياني للمبيعات والأرباح -->
+    <div class="col-lg-8">
+        <div class="card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title fw-bold m-0">تحليل المبيعات والأرباح (آخر 7 أيام)</h5>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">أسبوعي</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#">شهري</a></li>
+                        <li><a class="dropdown-item" href="#">سنوي</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div style="height: 290px;">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- اختصارات وإدارة سريعة -->
+    <div class="col-lg-4">
+        <div class="card p-4 h-100">
+            <h5 class="card-title fw-bold mb-3">إجراءات سريعة</h5>
+            <div class="d-grid gap-3">
+                <a href="{% url 'add_product' %}" class="btn btn-light text-start p-3 border d-flex align-items-center justify-content-between text-decoration-none text-dark shadow-sm">
+                    <div>
+                        <i class="bx bx-plus-circle text-primary fs-4 me-2"></i>
+                        <span class="fw-bold">إضافة منتج جديد</span>
+                    </div>
+                    <i class="bx bx-chevron-left text-muted"></i>
+                </a>
+                <a href="{% url 'order_list' %}" class="btn btn-light text-start p-3 border d-flex align-items-center justify-content-between text-decoration-none text-dark shadow-sm">
+                    <div>
+                        <i class="bx bx-cart text-success fs-4 me-2"></i>
+                        <span class="fw-bold">مراجعة الطلبات المعلقة</span>
+                    </div>
+                    <i class="bx bx-chevron-left text-muted"></i>
+                </a>
+                <a href="{% url 'sales_report' %}" class="btn btn-light text-start p-3 border d-flex align-items-center justify-content-between text-decoration-none text-dark shadow-sm">
+                    <div>
+                        <i class="bx bx-bar-chart-alt-2 text-warning fs-4 me-2"></i>
+                        <span class="fw-bold">تقارير المبيعات والأرباح</span>
+                    </div>
+                    <i class="bx bx-chevron-left text-muted"></i>
+                </a>
+                <a href="{% url 'home' %}" target="_blank" class="btn btn-light text-start p-3 border d-flex align-items-center justify-content-between text-decoration-none text-dark shadow-sm">
+                    <div>
+                        <i class="bx bx-store text-info fs-4 me-2"></i>
+                        <span class="fw-bold">معاينة واجهة المتجر</span>
+                    </div>
+                    <i class="bx bx-chevron-left text-muted"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جدول أحدث الطلبات -->
+<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="card-title fw-bold m-0">أحدث الطلبات الواردة</h5>
+        <a href="{% url 'order_list' %}" class="btn btn-sm btn-outline-primary">عرض كل الطلبات</a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>رقم الطلب</th>
+                    <th>اسم العميل</th>
+                    <th>المدينة</th>
+                    <th>المبلغ الإجمالي</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الطلب</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if recent_orders %}
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td class="fw-bold text-primary">#{{ order.id }}</td>
+                        <td>{{ order.customer_name|default:order.user.username }}</td>
+                        <td>{{ order.city|default:"عدن" }}</td>
+                        <td>{{ order.total_price }} ر.ي</td>
+                        <td>
+                            <span class="badge bg-warning text-dark px-2 py-1">{{ order.status|default:"قيد المعالجة" }}</span>
+                        </td>
+                        <td class="text-muted small">{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-light text-primary border"><i class="bx bx-show"></i> التفاصيل</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td class="fw-bold text-primary">#3</td>
+                        <td>kenan</td>
+                        <td>عدن</td>
+                        <td>$15.00</td>
+                        <td><span class="badge bg-info text-dark px-2 py-1">جديد</span></td>
+                        <td class="text-muted small">2026-09-25 18:28</td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-light text-primary border"><i class="bx bx-show"></i> التفاصيل</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-primary">#2</td>
+                        <td>كنان الشرعبي</td>
+                        <td>عدن</td>
+                        <td>$15.88</td>
+                        <td><span class="badge bg-info text-dark px-2 py-1">جديد</span></td>
+                        <td class="text-muted small">2026-09-25 15:54</td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-light text-primary border"><i class="bx bx-show"></i> التفاصيل</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-primary">#1</td>
+                        <td>حمزه الشرعبي</td>
+                        <td>عدن</td>
+                        <td>$150.00</td>
+                        <td><span class="badge bg-warning text-dark px-2 py-1">جاري الشحن</span></td>
+                        <td class="text-muted small">2026-09-20 18:47</td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-light text-primary border"><i class="bx bx-show"></i> التفاصيل</a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- مكتبة Chart.js للرسم البياني -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    const salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'],
+            datasets: [{
+                label: 'المبيعات (ر.ي)',
+                data: [15000, 22000, 18000, 32000, 28000, 41000, 48000],
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.05)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+</script>
+{% endblock %}

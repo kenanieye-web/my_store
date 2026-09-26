@@ -1,0 +1,112 @@
+{% extends 'admin/veltrix_base.html' %}
+{% load static %}
+
+{% block title %}إدارة المخزون - متجر كنان{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0">إدارة المخزون</h4>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-muted small">إجمالي المنتجات</div>
+                <div class="fs-3 fw-bold">{{ total_products }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-warning small">مخزون منخفض (≤ {{ low_stock_threshold }})</div>
+                <div class="fs-3 fw-bold text-warning">{{ low_stock_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-danger small">نافد المخزون</div>
+                <div class="fs-3 fw-bold text-danger">{{ out_of_stock_count }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-6">
+                <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="ابحث عن منتج...">
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>كل المنتجات</option>
+                    <option value="low" {% if status_filter == 'low' %}selected{% endif %}>مخزون منخفض</option>
+                    <option value="out" {% if status_filter == 'out' %}selected{% endif %}>نافد المخزون</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100"><i class="bx bx-filter-alt me-1"></i> تصفية</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 text-end">
+            <thead class="table-light">
+                <tr>
+                    <th>المنتج</th>
+                    <th>التصنيف</th>
+                    <th>السعر</th>
+                    <th>المخزون الحالي</th>
+                    <th>الحالة</th>
+                    <th>تحديث الكمية</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category }}</td>
+                    <td>{{ product.price }} ر.ي</td>
+                    <td class="fw-bold">{{ product.stock }}</td>
+                    <td>
+                        {% if product.stock <= 0 %}
+                            <span class="badge bg-danger-subtle text-danger">نافد</span>
+                        {% elif product.stock <= low_stock_threshold %}
+                            <span class="badge bg-warning-subtle text-warning">منخفض</span>
+                        {% else %}
+                            <span class="badge bg-success-subtle text-success">متوفر</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="post" class="d-flex gap-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="number" name="stock" value="{{ product.stock }}" min="0" class="form-control form-control-sm" style="width:90px;">
+                            <button type="submit" class="btn btn-dark btn-sm">حفظ</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">لا توجد منتجات مطابقة</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

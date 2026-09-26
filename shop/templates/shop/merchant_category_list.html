@@ -1,0 +1,82 @@
+{% extends 'admin/veltrix_base.html' %}
+{% load static %}
+
+{% block title %}إدارة التصنيفات - متجر كنان{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold text-dark m-0">تصنيفات المنتجات</h4>
+        <p class="text-muted small mt-1">إضافة وتنظيم أقسام وتصنيفات منتجات المتجر.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- نموذج إضافة تصنيف جديد -->
+    <div class="col-lg-4">
+        <div class="card p-4 shadow-sm border-0">
+            <h5 class="fw-bold mb-3 text-primary"><i class="bx bx-plus-circle me-1"></i> إضافة تصنيف جديد</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">اسم التصنيف</label>
+                    <input type="text" name="name" class="form-control" placeholder="مثال: إلكترونيات، إكسسوارات..." required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">التصنيف الرئيسي (اختياري)</label>
+                    <select name="parent" class="form-select">
+                        <option value="">-- تصنيف رئيسي (بدون أب) --</option>
+                        {% for cat in main_categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">حفظ التصنيف</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- جدول عرض التصنيفات الحالية -->
+    <div class="col-lg-8">
+        <div class="card p-4 shadow-sm border-0">
+            <h5 class="fw-bold mb-3">قائمة التصنيفات المسجلة</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>اسم التصنيف</th>
+                            <th>التصنيف الرئيسي</th>
+                            <th>الرابط (Slug)</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cat in categories %}
+                        <tr>
+                            <td class="fw-bold text-muted">{{ forloop.counter }}</td>
+                            <td class="fw-bold text-dark">{{ cat.name }}</td>
+                            <td>
+                                {% if cat.parent %}
+                                    <span class="badge bg-secondary">{{ cat.parent.name }}</span>
+                                {% else %}
+                                    <span class="badge bg-success">رئيسي</span>
+                                {% endif %}
+                            </td>
+                            <td><code class="text-secondary">{{ cat.slug }}</code></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-light text-danger border"><i class="bx bx-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">لا توجد تصنيفات مضافة حتى الآن.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

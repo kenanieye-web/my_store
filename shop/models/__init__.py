@@ -8,3 +8,6 @@ from .cart_item import CartItem
 from .order import Order
 from .order_item import OrderItem
 from .review import Review
+from .coupon import Coupon
+from .shipping_method import ShippingMethod
+from .payment_method import PaymentMethod

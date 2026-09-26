@@ -1,0 +1,148 @@
+{% extends 'admin/veltrix_base.html' %}
+{% load static %}
+
+{% block title %}طرق الدفع - متجر كنان{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0">طرق الدفع</h4>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+        <i class="bx bx-plus me-1"></i> إضافة طريقة دفع
+    </button>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-3">
+    {% for method in methods %}
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <div class="fw-bold">{{ method.name }}</div>
+                        <div class="text-muted small">{{ method.get_payment_type_display }}</div>
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="toggle">
+                        <input type="hidden" name="method_id" value="{{ method.id }}">
+                        {% if method.is_active %}
+                            <button type="submit" class="btn btn-sm btn-success-subtle text-success border-0">مفعّلة</button>
+                        {% else %}
+                            <button type="submit" class="btn btn-sm btn-light text-muted">معطّلة</button>
+                        {% endif %}
+                    </form>
+                </div>
+                {% if method.instructions %}
+                <div class="bg-light rounded p-2 small text-secondary mb-3" style="white-space:pre-line;">{{ method.instructions }}</div>
+                {% endif %}
+                <div class="d-flex gap-2">
+                    <button class="btn btn-dark btn-sm flex-fill" data-bs-toggle="modal" data-bs-target="#editPaymentModal{{ method.id }}">
+                        <i class="bx bx-edit me-1"></i> تعديل
+                    </button>
+                    <form method="post" class="flex-fill" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="method_id" value="{{ method.id }}">
+                        <button type="submit" class="btn btn-danger-subtle text-danger btn-sm w-100 border-0">
+                            <i class="bx bx-trash me-1"></i> حذف
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal تعديل -->
+    <div class="modal fade" id="editPaymentModal{{ method.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <form method="post" class="modal-content">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">تعديل طريقة الدفع</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="method_id" value="{{ method.id }}">
+                    <div class="mb-3">
+                        <label class="form-label">الاسم</label>
+                        <input type="text" name="name" value="{{ method.name }}" required class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">النوع</label>
+                        <select name="payment_type" class="form-select">
+                            {% for value, label in payment_type_choices %}
+                                <option value="{{ value }}" {% if method.payment_type == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">تعليمات الدفع (تظهر للعميل)</label>
+                        <textarea name="instructions" class="form-control">{{ method.instructions }}</textarea>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="is_active" class="form-check-input" id="activeEditP{{ method.id }}" {% if method.is_active %}checked{% endif %}>
+                        <label class="form-check-label" for="activeEditP{{ method.id }}">مفعّلة</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center text-muted py-5">لا توجد طرق دفع مضافة بعد</div>
+    {% endfor %}
+</div>
+
+<!-- Modal إضافة -->
+<div class="modal fade" id="addPaymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة طريقة دفع جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="action" value="add">
+                <div class="mb-3">
+                    <label class="form-label">الاسم</label>
+                    <input type="text" name="name" required class="form-control" placeholder="مثال: تحويل بنك الكريمي">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">النوع</label>
+                    <select name="payment_type" class="form-select">
+                        {% for value, label in payment_type_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">تعليمات الدفع (تظهر للعميل)</label>
+                    <textarea name="instructions" class="form-control" placeholder="مثال: رقم الحساب: 123456 - اسم المستفيد: ..."></textarea>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" name="is_active" class="form-check-input" id="activeAddP" checked>
+                    <label class="form-check-label" for="activeAddP">مفعّلة</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                <button type="submit" class="btn btn-primary">إضافة</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

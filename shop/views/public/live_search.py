@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from shop.models import Product
-
-
+from django.http import JsonResponse
 def live_search(request):
     """إرجاع نتائج البحث الفوري بصيغة JSON للـ AJAX"""
     query = request.GET.get('q', '')

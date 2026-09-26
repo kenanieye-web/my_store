@@ -12,3 +12,8 @@ from .delete_product import delete_product
 from .import_product_from_url import import_product_from_url
 from .download_template import download_template
 from .import_excel import import_excel
+from .edit_product import edit_product
+from .promotions_list import promotions_list
+from .loyalty_program import loyalty_program
+from .banners_list import banners_list
+from .affiliate_marketing import affiliate_marketing

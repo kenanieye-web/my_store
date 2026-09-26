@@ -29,4 +29,4 @@ def merchant_dashboard(request):
         'canceled_orders_count': canceled_orders_count,
         'recent_orders': recent_orders,
     }
-    return render(request, 'shop/dashboard.html', context)
+    return render(request, 'shop/merchant_dashboard.html', context)

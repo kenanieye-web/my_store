@@ -1,26 +1,65 @@
 {% load static %}
 <!-- 2. الهيدر الأوسط (الشعار + البحث + الحساب) -->
-        <div class="bg-white py-3 border-bottom w-100">
-            <div class
-            ="container-fluid container-lg d-flex align-items-center justify-content-between gap-3">
-                
-                <!-- الشعار -->
-                <div class="header-brand">
-                    <a class="navbar-brand m-0" href="{% url 'home' %}">
-                        <img src="{% static 'shop/images/kenan_logo.png' %}" alt="متجر كنان" class="cropped-logo">
-                    </a>
-                </div>
+<div class="bg-white py-3 border-bottom w-100">
+    <div class="container-fluid container-lg d-flex align-items-center justify-content-between gap-3">
+        
+        <!-- الشعار -->
+        <div class="header-brand">
+            <a class="navbar-brand m-0" href="{% url 'home' %}">
+                <img src="{% static 'shop/images/kenan_logo.png' %}" alt="متجر كنان" class="cropped-logo">
+            </a>
+        </div>
 
-                <!-- مربع البحث الفوري -->
-<div class="header-search d-none d-md-block mx-2 mx-lg-4 position-relative">
-    <form action="{% url 'product_list' %}" method="GET" class="position-relative w-100">
-        <input type="text" id="search-input" name="q" class="form-control rounded-pill bg-light border ps-5" placeholder="ابحث عن منتج..." autocomplete="off">
-        <button type="submit" class="btn position-absolute top-50 start-0 translate-middle-y ms-2 text-muted">
-            <i class="fa-solid fa-magnifying-glass"></i>
-        </button>
-    </form>
-    
-    <!-- قائمة النتائج المنسدلة للبحث الفوري -->
-    <div id="search-results" class="position-absolute w-100 bg-white border rounded-3 shadow-sm mt-1 d-none" style="z-index: 1050; max-height: 300px; overflow-y: auto;">
+        <!-- مربع البحث الفوري -->
+        <div class="header-search d-none d-md-block mx-2 mx-lg-4 position-relative flex-grow-1">
+            <form action="{% url 'product_list' %}" method="GET" class="position-relative w-100">
+                <input type="text" id="search-input" name="q" class="form-control rounded-pill bg-light border ps-5" placeholder="ابحث عن منتج..." autocomplete="off">
+                <button type="submit" class="btn position-absolute top-50 start-0 translate-middle-y ms-2 text-muted border-0 bg-transparent">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </form>
+            
+            <!-- قائمة النتائج المنسدلة للبحث الفوري -->
+            <div id="search-results" class="position-absolute w-100 bg-white border rounded-3 shadow-sm mt-1 d-none" style="z-index: 1050; max-height: 300px; overflow-y: auto;">
+            </div>
+        </div>
+
+        <!-- أزرار العمليات والتسجيل -->
+        <div class="header-actions d-flex align-items-center gap-2 flex-wrap">
+            <!-- زر السلة -->
+            <a href="{% url 'cart_detail' %}" class="btn btn-kenan-orange shadow-sm btn-sm px-3 py-2 position-relative">
+                <i class="fa-solid fa-cart-shopping me-1"></i> السلة
+                {% if cart_count > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {{ cart_count }}
+                    </span>
+                {% endif %}
+            </a>
+
+            {% if request.user.is_authenticated %}
+                <!-- لوحة التحكم (للتاجر/المشرف) -->
+                {% if request.user.is_staff %}
+                    <a href="{% url 'merchant_dashboard' %}" class="btn btn-warning text-dark btn-sm fw-bold py-2">لوحة التحكم</a>
+                {% endif %}
+
+                <!-- حسابي -->
+                <a href="{% url 'customer_profile' %}" class="btn btn-outline-kenan btn-sm fw-bold py-2">
+                    <i class="fa-solid fa-user me-1"></i> حسابي
+                </a>
+
+                <!-- تسجيل الخروج -->
+                <form id="logout-form" action="{% url 'logout' %}" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-light btn-sm text-danger py-2 border" title="تسجيل الخروج">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </form>
+            {% else %}
+                <!-- تسجيل الدخول وحساب جديد -->
+                <a href="{% url 'login' %}" class="btn btn-outline-kenan btn-sm fw-bold py-2">تسجيل الدخول</a>
+                <a href="{% url 'register_user' %}" class="btn btn-sm btn-kenan-orange text-white fw-bold py-2">حساب جديد</a>
+            {% endif %}
+        </div>
+
     </div>
 </div>

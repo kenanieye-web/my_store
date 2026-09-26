@@ -16,6 +16,16 @@ def checkout(request):
 
     total_price = sum((item.get_total_price() for item in cart.items.all()), 0)
 
+    # جلب بيانات العميل المسجّل مسبقاً لتعبئتها تلقائياً (تبقى قابلة للتعديل)
+    initial_data = {'full_name': '', 'phone': '', 'address': '', 'city': ''}
+    if request.user.is_authenticated:
+        customer_profile = getattr(request.user, 'customer_profile', None)
+        initial_data['full_name'] = request.user.get_full_name() or request.user.username
+        if customer_profile:
+            initial_data['phone'] = customer_profile.phone
+            initial_data['address'] = customer_profile.address or ''
+            initial_data['city'] = customer_profile.city
+
     if request.method == 'POST':
         full_name = request.POST.get('full_name', '').strip()
         city = request.POST.get('city', '').strip()
@@ -24,7 +34,11 @@ def checkout(request):
 
         if not all([full_name, city, address, phone]):
             messages.error(request, "يرجى ملء جميع حقول الشحن المطلوبة.")
-            return render(request, 'shop/checkout.html', {'cart': cart, 'total_price': total_price})
+            return render(request, 'shop/checkout.html', {
+                'cart': cart,
+                'total_price': total_price,
+                'initial_data': {'full_name': full_name, 'city': city, 'address': address, 'phone': phone},
+            })
 
         customer_profile = getattr(request.user, 'customer_profile', None) if request.user.is_authenticated else None
 
@@ -56,4 +70,8 @@ def checkout(request):
         messages.success(request, f"تم إتمام طلبك بنجاح! رقم الطلب #{order.id}")
         return redirect('order_success', order_id=order.id)
 
-    return render(request, 'shop/checkout.html', {'cart': cart, 'total_price': total_price})
+    return render(request, 'shop/checkout.html', {
+        'cart': cart,
+        'total_price': total_price,
+        'initial_data': initial_data,
+    })
