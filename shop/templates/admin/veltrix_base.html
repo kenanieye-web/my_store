@@ -121,8 +121,8 @@
 
         /* ===== الشريط العلوي ===== */
         .topbar {
-            background: #4a4949;
-            border-bottom: 1px solid #e9ecef;
+            background: #1b5299;
+            border-bottom: 4px solid #e67e22;
             padding: 10px 25px;
         }
 
@@ -195,6 +195,9 @@
                         </a>
                         <a href="{% url 'merchant_category_list' %}" class="{% if request.resolver_match.url_name == 'merchant_category_list' %}text-white fw-bold{% endif %}">
                             <i class="bx bx-category me-2"></i> التصنيفات
+                        </a>
+                        <a href="{% url 'product_requests_list' %}" class="{% if request.resolver_match.url_name == 'product_requests_list' %}text-white fw-bold{% endif %}">
+                            <i class="bx bx-search-alt me-2"></i> طلبات المنتجات
                         </a>
                     </div>
                 </div>
@@ -289,6 +292,9 @@
                     <div class="collapse submenu {% if 'customer' in request.resolver_match.url_name %}show{% endif %}" id="customersSubMenu">
                         <a href="{% url 'customer_list' %}" class="{% if request.resolver_match.url_name == 'customer_list' %}text-white fw-bold{% endif %}">
                             <i class="bx bx-list-ul me-2"></i> قاعدة بيانات العملاء
+                        </a>
+                                                <a href="{% url 'customer_messages_list' %}" class="{% if request.resolver_match.url_name == 'customer_messages_list' %}text-white fw-bold{% endif %}">
+                            <i class="bx bx-envelope me-2"></i> رسائل العملاء
                         </a>
                     </div>
                 </div>
@@ -431,7 +437,7 @@
             </div>
 
             <!-- صفحة المحتوى المتغيرة -->
-            <div class="p-4">
+            <div class="p-3">
                 {% block content %}
                 <!-- سينزل المحتوى هنا -->
                 {% endblock %}

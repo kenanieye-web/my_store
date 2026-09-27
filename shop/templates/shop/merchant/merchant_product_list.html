@@ -1,48 +1,80 @@
-{% extends 'shop/base.html' %}
-{% block title %}إدارة المنتجات{% endblock %}
+{% extends 'admin/veltrix_base.html' %}
+{% load static %}
+
+{% block title %}إدارة المنتجات - متجر كنان{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fa-solid fa-boxes-stacked me-2"></i> إدارة منتجات المتجر</h2>
-        
-        <!-- مجموعة الأزرار (الإضافة + نموذج الإكسل + استيراد الإكسل) -->
-        <div class="d-flex gap-2">
-            <a href="{% url 'add_product' %}" class="btn btn-success">
-                <i class="fa-solid fa-plus me-1"></i> إضافة منتج جديد
-            </a>
-            
-            <a href="{% url 'download-template' %}" class="btn btn-outline-secondary">
-                <i class="fa-solid fa-file-excel me-1"></i> نموذج Excel
-            </a>
-            
-            <a href="{% url 'import-excel' %}" class="btn btn-outline-primary">
-                <i class="fa-solid fa-file-import me-1"></i> استيراد Excel
-            </a>
-        </div>
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'merchant_dashboard' %}" class="btn btn-outline-secondary btn-sm" title="العودة للوحة التحكم">
+            <i class="bx bx-arrow-back"></i>
+        </a>
+        <h4 class="fw-bold m-0"><i class="bx bx-package me-1"></i> إدارة منتجات المتجر</h4>
     </div>
 
-    <!-- نموذج الاستيراد السريع عبر الرابط -->
-    <div class="card shadow-sm border-0 mb-4 bg-light">
-        <div class="card-body">
-            <form action="{% url 'import_product_from_url' %}" method="POST">
-                {% csrf_token %}
-                <div class="input-group">
-                    <input type="url" name="product_url" class="form-control" placeholder="الصق رابط المنتج من علي بابا هنا للاستيراد السريع..." required>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-download me-1"></i> سحب واستيراد تلقائي
-                    </button>
-                </div>
-            </form>
-        </div>
+    <div class="d-flex gap-1">
+        <a href="{% url 'add_product' %}" class="btn btn-success btn-sm">
+            <i class="bx bx-plus me-1"></i> إضافة منتج جديد
+        </a>
+        <a href="{% url 'download-template' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bx bx-file me-1"></i> نموذج Excel
+        </a>
+        <a href="{% url 'import-excel' %}" class="btn btn-outline-primary btn-sm">
+            <i class="bx bx-import me-1"></i> استيراد Excel
+        </a>
     </div>
+</div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body">
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show py-2" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- نموذج الاستيراد السريع عبر الرابط -->
+<div class="card mb-2">
+    <div class="card-body p-2">
+        <form action="{% url 'import_product_from_url' %}" method="POST">
+            {% csrf_token %}
+            <div class="input-group input-group-sm">
+                <input type="url" name="product_url" class="form-control" placeholder="الصق رابط المنتج من علي بابا هنا للاستيراد السريع..." required>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bx bx-download me-1"></i> سحب واستيراد تلقائي
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- جدول المنتجات -->
+<div class="card">
+    <div class="card-body p-2">
+        <form method="POST" action="{% url 'bulk_product_actions' %}" id="bulk-action-form">
+            {% csrf_token %}
+
+            <!-- شريط الإجراءات الجماعية -->
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <select name="action" class="form-select form-select-sm" style="max-width: 200px;" required>
+                    <option value="">-- اختر إجراءً --</option>
+                    <option value="delete">حذف المحدد</option>
+                    <option value="export">تصدير المحدد إلى Excel</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-dark" onclick="return confirmBulkAction(this.form);">
+                    <i class="bx bx-play me-1"></i> تنفيذ
+                </button>
+                <span class="text-muted small" id="selected-count">0 منتج محدد</span>
+            </div>
+
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-dark">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox" class="form-check-input" id="select-all-checkbox" onclick="toggleAllProducts(this)">
+                            </th>
                             <th>الصورة</th>
                             <th>اسم المنتج</th>
                             <th>التصنيف</th>
@@ -55,10 +87,13 @@
                         {% for product in products %}
                         <tr>
                             <td>
+                                <input type="checkbox" class="form-check-input product-checkbox" name="selected_products" value="{{ product.id }}" onclick="updateSelectedCount()">
+                            </td>
+                            <td>
                                 {% if product.image %}
-                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
                                 {% else %}
-                                    <span class="text-muted">لا توجد صورة</span>
+                                    <span class="text-muted small">لا توجد صورة</span>
                                 {% endif %}
                             </td>
                             <td class="fw-bold">{{ product.name }}</td>
@@ -71,30 +106,55 @@
                                     <span class="badge bg-danger">غير متوفر</span>
                                 {% endif %}
                             </td>
-                            <td>
-                                <a href="{% url 'edit_product' product.id %}" class="btn btn-sm btn-primary">
-                                    <i class="fa-solid fa-pen-to-square"></i> تعديل
-                                </a>
-                                <a href="{% url 'delete_product' product.id %}" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من حذف هذا المنتج؟');">
-                                    <i class="fa-solid fa-trash"></i> حذف
-                                </a>
+                            <td class="text-nowrap">
+                                <div class="d-flex gap-1">
+                                    <a href="{% url 'edit_product' product.id %}" class="btn btn-sm btn-outline-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 30px; height: 30px;" title="تعديل">
+                                        <i class="bx bx-edit fs-6"></i>
+                                    </a>
+                                    <a href="{% url 'delete_product' product.id %}" class="btn btn-sm btn-outline-danger rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 30px; height: 30px;" title="حذف" onclick="return confirm('هل أنت متأكد من حذف هذا المنتج؟');">
+                                        <i class="bx bx-trash fs-6"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">لا توجد منتجات مسجلة حالياً.</td>
+                            <td colspan="7" class="text-center py-3 text-muted">لا توجد منتجات مسجلة حالياً.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
-    
-    <div class="mt-3">
-        <a href="{% url 'merchant_dashboard' %}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-right me-1"></i> العودة لوحة التحكم
-        </a>
+        </form>
     </div>
 </div>
+
+<script>
+    function toggleAllProducts(source) {
+        document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = source.checked);
+        updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+        const checked = document.querySelectorAll('.product-checkbox:checked').length;
+        document.getElementById('selected-count').textContent = checked + ' منتج محدد';
+    }
+
+    function confirmBulkAction(form) {
+        const checked = document.querySelectorAll('.product-checkbox:checked').length;
+        const action = form.querySelector('[name="action"]').value;
+        if (checked === 0) {
+            alert('الرجاء تحديد منتج واحد على الأقل.');
+            return false;
+        }
+        if (!action) {
+            alert('الرجاء اختيار إجراء لتنفيذه.');
+            return false;
+        }
+        if (action === 'delete') {
+            return confirm('هل أنت متأكد من حذف ' + checked + ' منتج؟ لا يمكن التراجع عن هذا الإجراء.');
+        }
+        return true;
+    }
+</script>
 {% endblock %}

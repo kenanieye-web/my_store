@@ -6,8 +6,47 @@
 
 {% block meta_keywords %}{{ product.name }}, تسوق {{ product.name }}, متجر كنان, استيراد وتصدير, منتجات جملة{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* تأثير تكبير الصورة الرئيسية عند المرور بالماوس */
+    .zoom-container {
+        overflow: hidden;
+    }
+    .zoom-container img {
+        transition: transform 0.35s ease;
+    }
+    .zoom-container:hover img {
+        transform: scale(1.15);
+    }
+
+    /* تحسين ارتفاع الصورة على الشاشات الصغيرة */
+    @media (max-width: 991.98px) {
+        .main-media-container {
+            min-height: 280px !important;
+        }
+    }
+
+    /* أزرار الكمية (Stepper) */
+    .qty-stepper-btn {
+        width: 42px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">الرئيسية</a></li>
+            {% if product.category %}
+                <li class="breadcrumb-item text-secondary">{{ product.category.name }}</li>
+            {% endif %}
+            <li class="breadcrumb-item active fw-bold" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
     <div class="row g-5 align-items-start">
         
         <!-- العمود الأول: صورة المنتج المعرض والفيديو -->
@@ -15,9 +54,9 @@
             <div class="card border-0 shadow-sm p-3 rounded-3 text-center bg-white">
                 
                 <!-- عرض الوسائط الرئيسية (الصورة أو الفيديو) -->
-                <div class="main-media-container position-relative d-flex align-items-center justify-content-center bg-light rounded" style="min-height: 380px;">
+                <div class="main-media-container zoom-container position-relative d-flex align-items-center justify-content-center bg-light rounded" style="min-height: 380px;">
                     {% if product.image %}
-                        <img id="mainDisplayImage" src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}" style="max-height: 450px; object-fit: contain;">
+                        <img id="mainDisplayImage" src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}" style="max-height: 450px; max-width: 100%; object-fit: contain;">
                     {% else %}
                         <div id="noImagePlaceholder" class="d-flex justify-content-center align-items-center rounded" style="height: 350px;">
                             <i class="fa-solid fa-image text-muted display-1"></i>
@@ -81,84 +120,160 @@
                     </div>
                 {% endif %}
 
-                <!-- 4. السعر -->
-                <div class="mb-3">
-                    <h2 class="text-success fw-bold m-0">${{ product.price|floatformat:2 }}</h2>
+                <!-- 4. السعر (أبرز بصريًا) -->
+                <div class="mb-3 d-flex align-items-baseline gap-2">
+                    <span class="text-success fw-bold" style="font-size: 2.5rem;">${{ product.price|floatformat:2 }}</span>
+                    {% if product.old_price %}
+                        <span class="text-muted text-decoration-line-through fs-5">${{ product.old_price|floatformat:2 }}</span>
+                    {% endif %}
                 </div>
+                {# ملاحظة: لعرض سعر قبل الخصم، أضف حقل old_price لموديل Product ثم فعّل الشرط أعلاه #}
 
                 <!-- 5. حالة المخزون -->
-                <div class="mb-4">
+                <div class="mb-3">
                     <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
                         <i class="fa-solid fa-check-circle me-1"></i> متوفر للطلب
                     </span>
                 </div>
-<!-- قسم التقييمات والنجوم -->
-    <div class="d-flex align-items-center gap-2 mb-3">
-        <div class="text-warning fs-5">
-            <span class="fw-bold fs-6 text-dark ms-1">{{ product.rating|default:5.0 }}</span>
-            ★★★★★
-        </div>
-        <span class="text-muted small fw-bold">({{ product.reviews_count|default:0 }} تقييم)</span>
-    </div>
 
-    <!-- خيارات الألوان المتاحة -->
-    {% if product.colors %}
-    <div class="mb-3">
-        <label class="form-label fw-bold text-secondary small">الألوان المتاحة:</label>
-        <div class="d-flex flex-wrap gap-2">
-            {% for color in product.colors.split %}
-                <span class="badge bg-light text-dark border px-3 py-2">{{ color }}</span>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-               <!-- الوصف والمواصفات الفنية بتبويبات منسقة -->
-<div class="mt-4 pt-3 border-top">
-    <ul class="nav nav-tabs mb-3" id="productTab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active fw-bold" id="desc-tab" data-bs-toggle="tab" data-bs-target="#desc-pane" type="button" role="tab">الوصف العام</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link fw-bold text-secondary" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs-pane" type="button" role="tab">المواصفات الفنية</button>
-        </li>
-    </ul>
-    
-    <div class="tab-content text-muted small lh-lg" id="productTabContent">
-        <div class="tab-pane fade show active" id="desc-pane" role="tabpanel">
-            {{ product.description|linebreaks }}
-        </div>
-        <div class="tab-pane fade" id="specs-pane" role="tabpanel">
-            {{ product.specifications|linebreaks|default:"لا توجد مواصفات فنية إضافية مضافة." }}
-        </div>
-    </div>
-</div>
+                <!-- 6. تقدير الشحن (السعر + مدة التوصيل) -->
+                {% if shipping_estimate %}
+                <div class="mb-4">
+                    <span class="badge bg-light text-dark border px-3 py-2">
+                        <i class="fa-solid fa-truck me-1 text-primary"></i>
+                        الشحن من ${{ shipping_estimate.cost }} - التوصيل خلال {{ shipping_estimate.delivery_days }} يوم
+                    </span>
+                </div>
+                {% endif %}
+
+                <!-- قسم التقييمات والنجوم -->
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    {% if product.reviews_count %}
+                        <div class="text-warning fs-5">
+                            <span class="fw-bold fs-6 text-dark ms-1">{{ product.rating|default:5.0 }}</span>
+                            ★★★★★
+                        </div>
+                        <span class="text-muted small fw-bold">({{ product.reviews_count }} تقييم)</span>
+                    {% else %}
+                        <span class="text-muted small">لا توجد تقييمات بعد</span>
+                    {% endif %}
+                </div>
+
+                <!-- خيارات الألوان المتاحة -->
+                {% if product.colors %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary small">الألوان المتاحة:</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for color in product.colors.split %}
+                            <span class="badge bg-light text-dark border px-3 py-2">{{ color }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- الوصف والمواصفات الفنية بتبويبات منسقة -->
+                <div class="mt-4 pt-3 border-top">
+                    <ul class="nav nav-tabs mb-3" id="productTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold" id="desc-tab" data-bs-toggle="tab" data-bs-target="#desc-pane" type="button" role="tab">الوصف العام</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold text-secondary" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs-pane" type="button" role="tab">المواصفات الفنية</button>
+                        </li>
+                        {% if product.length_cm or product.width_cm or product.height_cm or product.weight_kg or product.units_per_carton %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold text-secondary" id="shipping-tab" data-bs-toggle="tab" data-bs-target="#shipping-pane" type="button" role="tab">الشحن والتغليف</button>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    
+                    <div class="tab-content text-muted small lh-lg" id="productTabContent">
+                        <div class="tab-pane fade show active" id="desc-pane" role="tabpanel">
+                            {{ product.description|linebreaks }}
+                        </div>
+                        <div class="tab-pane fade" id="specs-pane" role="tabpanel">
+                            {% if specs_table %}
+                            <table class="table table-sm table-striped mb-0">
+                                <tbody>
+                                    {% for key, value in specs_table %}
+                                    <tr>
+                                        {% if key %}
+                                            <th class="text-secondary" style="width: 35%;">{{ key }}</th>
+                                            <td>{{ value }}</td>
+                                        {% else %}
+                                            <td colspan="2">{{ value }}</td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% else %}
+                                لا توجد مواصفات فنية إضافية مضافة.
+                            {% endif %}
+                        </div>
+                        {% if product.length_cm or product.width_cm or product.height_cm or product.weight_kg or product.units_per_carton %}
+                        <div class="tab-pane fade" id="shipping-pane" role="tabpanel">
+                            <table class="table table-sm table-striped mb-0">
+                                <tbody>
+                                    {% if product.length_cm or product.width_cm or product.height_cm %}
+                                    <tr>
+                                        <th class="text-secondary" style="width: 35%;">أبعاد القطعة الواحدة</th>
+                                        <td>{{ product.length_cm|default:"-" }} × {{ product.width_cm|default:"-" }} × {{ product.height_cm|default:"-" }} سم</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if product.weight_kg %}
+                                    <tr>
+                                        <th class="text-secondary">وزن القطعة الواحدة</th>
+                                        <td>{{ product.weight_kg }} كغ</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if product.units_per_carton %}
+                                    <tr>
+                                        <th class="text-secondary">عدد القطع بالكرتون</th>
+                                        <td>{{ product.units_per_carton }} قطعة</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if product.carton_length_cm or product.carton_width_cm or product.carton_height_cm %}
+                                    <tr>
+                                        <th class="text-secondary">أبعاد الكرتون</th>
+                                        <td>{{ product.carton_length_cm|default:"-" }} × {{ product.carton_width_cm|default:"-" }} × {{ product.carton_height_cm|default:"-" }} سم</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if product.carton_weight_kg %}
+                                    <tr>
+                                        <th class="text-secondary">وزن الكرتون</th>
+                                        <td>{{ product.carton_weight_kg }} كغ</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
                
-
-                <!-- 8. نموذج إضافة المنتج للسلة -->
+                <!-- 8. نموذج إضافة المنتج للسلة (كمية + زر بصف واحد متجانس) -->
                 <form action="{% url 'add_to_cart' product.id %}" method="POST" class="mt-4">
                     {% csrf_token %}
-                    <div class="row g-3 align-items-center">
-                        <div class="col-auto">
-                            <label for="quantity" class="col-form-label fw-bold">الكمية:</label>
+                    <div class="d-flex gap-2">
+                        <div class="input-group" style="max-width: 150px;">
+                            <button type="button" class="btn btn-outline-secondary qty-stepper-btn" onclick="stepQty(-1)">−</button>
+                            <input type="number" id="quantity" name="quantity" value="1" min="1" class="form-control text-center">
+                            <button type="button" class="btn btn-outline-secondary qty-stepper-btn" onclick="stepQty(1)">+</button>
                         </div>
-                        <div class="col-auto">
-                            <input type="number" id="quantity" name="quantity" value="1" min="1" class="form-control text-center" style="width: 90px;">
-                        </div>
-                        <div class="col">
-                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
-                                <i class="fa-solid fa-cart-plus me-2"></i> إضافة إلى السلة
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-primary flex-grow-1 py-2 fw-bold shadow-sm">
+                            <i class="fa-solid fa-cart-plus me-2"></i> إضافة إلى السلة
+                        </button>
                     </div>
                 </form>
                 
-<!-- زر المشاركة عبر واتساب -->
-<div class="mt-3">
-    <a href="https://api.whatsapp.com/send?text=مرحباً، أود الاستفسار عن هذا المنتج: {{ request.build_absolute_uri }}" target="_blank" class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2 py-2 fw-bold shadow-sm">
-        <i class="fa-brands fa-whatsapp fs-5"></i>
-        طلب واستفسار عبر واتساب
-    </a>
-</div>
+                <!-- زر المشاركة عبر واتساب (أصغر من زر الشراء) -->
+                <div class="mt-2">
+                    <a href="https://api.whatsapp.com/send?text=مرحباً، أود الاستفسار عن هذا المنتج: {{ request.build_absolute_uri }}" target="_blank" class="btn btn-success btn-sm d-inline-flex align-items-center justify-content-center gap-2 px-3 py-1 fw-bold">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        طلب واستفسار عبر واتساب
+                    </a>
+                </div>
   
                 <!-- 9. رابط العودة -->
                 <div class="mt-4 pt-3 border-top">
@@ -173,7 +288,7 @@
     </div>
 </div>
 
-<!-- JavaScript للتحويل بين الصور والفيديو -->
+<!-- JavaScript للتحويل بين الصور والفيديو + التحكم بالكمية -->
 <script>
 function switchToImage(imgUrl) {
     const imgElement = document.getElementById('mainDisplayImage');
@@ -208,7 +323,15 @@ function switchToVideo() {
         videoElement.play();
     }
 }
+
+function stepQty(delta) {
+    const input = document.getElementById('quantity');
+    let value = parseInt(input.value || '1', 10) + delta;
+    if (value < 1) value = 1;
+    input.value = value;
+}
 </script>
+
 <!-- قسم المنتجات المشابهة -->
 <div class="container mb-5">
     <div class="row pt-4 border-top">

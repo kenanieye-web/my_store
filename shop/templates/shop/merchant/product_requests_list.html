@@ -1,0 +1,179 @@
+{% extends 'admin/veltrix_base.html' %}
+
+{% block title %}طلبات المنتجات - متجر كنان{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">طلبات المنتجات غير المتوفرة</h3>
+        <p class="text-muted mb-0">طلبات وصلتك من عملاء يبحثون عن منتجات غير موجودة حاليًا في متجرك</p>
+    </div>
+    {% if new_count %}
+        <span class="badge bg-danger px-3 py-2">{{ new_count }} طلب جديد</span>
+    {% endif %}
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show py-2" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bx bx-search-alt me-2 text-primary"></i> قائمة الطلبات</h5>
+        <div class="btn-group btn-group-sm">
+            <a href="?status=" class="btn {% if not status_filter %}btn-primary{% else %}btn-outline-secondary{% endif %}">الكل</a>
+            <a href="?status=new" class="btn {% if status_filter == 'new' %}btn-primary{% else %}btn-outline-secondary{% endif %}">جديد</a>
+            <a href="?status=reviewing" class="btn {% if status_filter == 'reviewing' %}btn-primary{% else %}btn-outline-secondary{% endif %}">قيد المراجعة</a>
+            <a href="?status=available" class="btn {% if status_filter == 'available' %}btn-primary{% else %}btn-outline-secondary{% endif %}">تم التوفير</a>
+            <a href="?status=rejected" class="btn {% if status_filter == 'rejected' %}btn-primary{% else %}btn-outline-secondary{% endif %}">غير متاح</a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>مقدم الطلب</th>
+                    <th>المنتج المطلوب</th>
+                    <th>الكمية</th>
+                    <th>السعر التقريبي</th>
+                    <th>الصور</th>
+                    <th>الحالة</th>
+                    <th>التاريخ</th>
+                    <th class="text-center">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in product_requests %}
+                <tr class="{% if req.status == 'new' %}fw-bold{% endif %}">
+                    <td>
+                        {{ req.full_name }}{% if req.customer %} <i class="bx bx-check-shield text-success" title="عميل مسجل"></i>{% endif %}
+                        <div class="small text-muted"><i class="bx bx-phone"></i> {{ req.phone }}</div>
+                    </td>
+                    <td>
+                        {{ req.product_name }}
+                        {% if req.specifications %}<div class="small text-muted text-truncate" style="max-width: 200px;">{{ req.specifications }}</div>{% endif %}
+                    </td>
+                    <td>{{ req.quantity }}</td>
+                    <td>{% if req.approximate_price %}${{ req.approximate_price }}{% else %}—{% endif %}</td>
+                    <td>
+                        {% if req.images.exists %}
+                            <span class="badge bg-info-subtle text-info">{{ req.images.count }} صورة</span>
+                        {% else %}
+                            <span class="text-muted small">لا توجد</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if req.status == 'new' %}
+                            <span class="badge bg-danger">جديد</span>
+                        {% elif req.status == 'reviewing' %}
+                            <span class="badge bg-warning text-dark">قيد المراجعة</span>
+                        {% elif req.status == 'available' %}
+                            <span class="badge bg-success">تم التوفير</span>
+                        {% else %}
+                            <span class="badge bg-secondary">غير متاح</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ req.created_at|date:"Y-m-d H:i" }}</td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewReqModal{{ req.id }}" title="عرض">
+                                <i class="bx bx-show"></i> عرض
+                            </button>
+                            <a href="{% url 'export_product_request_pdf' req.id %}" class="btn btn-sm btn-outline-danger" title="تصدير PDF">
+                                <i class="bx bxs-file-pdf"></i>
+                            </a>
+                            <a href="{% url 'export_product_request_excel' req.id %}" class="btn btn-sm btn-outline-success" title="تصدير Excel">
+                                <i class="bx bx-spreadsheet"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Modal عرض تفاصيل الطلب -->
+                <div class="modal fade" id="viewReqModal{{ req.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">طلب: {{ req.product_name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6"><strong>مقدم الطلب:</strong> {{ req.full_name }}</div>
+                                    <div class="col-md-6"><strong>الهاتف:</strong> {{ req.phone }}</div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6"><strong>الكمية:</strong> {{ req.quantity }}</div>
+                                    <div class="col-md-6"><strong>السعر التقريبي:</strong> {% if req.approximate_price %}${{ req.approximate_price }}{% else %}غير محدد{% endif %}</div>
+                                </div>
+                                {% if req.specifications %}
+                                <div class="mb-3">
+                                    <strong>المواصفات:</strong>
+                                    <p class="bg-light p-2 rounded mt-1">{{ req.specifications|linebreaks }}</p>
+                                </div>
+                                {% endif %}
+                                {% if req.notes %}
+                                <div class="mb-3">
+                                    <strong>ملاحظات:</strong>
+                                    <p class="bg-light p-2 rounded mt-1">{{ req.notes|linebreaks }}</p>
+                                </div>
+                                {% endif %}
+
+                                {% if req.video_url %}
+                                <div class="mb-3">
+                                    <strong>رابط الفيديو:</strong>
+                                    <a href="{{ req.video_url }}" target="_blank" class="d-block mt-1">
+                                        <i class="bx bx-play-circle text-danger"></i> {{ req.video_url }}
+                                    </a>
+                                </div>
+                                {% endif %}
+
+                                {% if req.images.exists %}
+                                <div class="mb-3">
+                                    <strong>الصور المرفقة:</strong>
+                                    <div class="d-flex flex-wrap gap-2 mt-2">
+                                        {% for img in req.images.all %}
+                                            <a href="{{ img.image.url }}" target="_blank">
+                                                <img src="{{ img.image.url }}" class="rounded border" style="width: 90px; height: 90px; object-fit: cover;">
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <form method="post" class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                                    <label class="fw-bold small mb-0">تحديث الحالة:</label>
+                                    <select name="status" class="form-select form-select-sm" style="max-width: 200px;">
+                                        <option value="new" {% if req.status == 'new' %}selected{% endif %}>جديد</option>
+                                        <option value="reviewing" {% if req.status == 'reviewing' %}selected{% endif %}>قيد المراجعة</option>
+                                        <option value="available" {% if req.status == 'available' %}selected{% endif %}>تم التوفير</option>
+                                        <option value="rejected" {% if req.status == 'rejected' %}selected{% endif %}>غير متاح</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm">حفظ</button>
+                                    {% if req.phone %}
+                                        <a href="https://wa.me/{{ req.phone }}" target="_blank" class="btn btn-success btn-sm ms-auto">
+                                            <i class="bx bxl-whatsapp"></i> تواصل واتساب
+                                        </a>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">لا توجد طلبات حاليًا.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

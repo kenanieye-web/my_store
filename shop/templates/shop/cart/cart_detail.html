@@ -53,6 +53,31 @@
                     </table>
                 </div>
             </div>
+                        {% if shipping_options %}
+            <div class="card-body border-top">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-truck me-2 text-primary"></i> طريقة الشحن</h5>
+                <form action="{% url 'select_shipping_method' %}" method="POST">
+                    {% csrf_token %}
+                    {% for option in shipping_options %}
+                    <div class="form-check border rounded-3 p-3 mb-2 {% if selected_shipping.method_id == option.method_id %}border-primary bg-light{% endif %}">
+                        <input class="form-check-input" type="radio" name="shipping_method_id"
+                               id="shipping_{{ option.method_id }}" value="{{ option.method_id }}"
+                               onchange="this.form.submit()"
+                               {% if selected_shipping.method_id == option.method_id %}checked{% endif %}>
+                        <label class="form-check-label w-100 d-flex justify-content-between" for="shipping_{{ option.method_id }}">
+                            <span>
+                                <strong>{{ option.method_name }}</strong>
+                                {% if option.company_name %}<span class="text-muted"> - {{ option.company_name }}</span>{% endif %}
+                                <br>
+                                <small class="text-muted">مدة التوصيل: {{ option.delivery_days }} يوم</small>
+                            </span>
+                            <span class="fw-bold text-success">{{ option.cost }} $</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </form>
+            </div>
+            {% endif %}
             <div class="card-footer bg-white p-4 d-flex justify-content-between align-items-center">
                 <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">متابعة التسوق</a>
                 <a href="{% url 'checkout' %}" class="btn btn-success btn-lg fw-bold">

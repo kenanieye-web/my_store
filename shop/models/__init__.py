@@ -11,3 +11,5 @@ from .review import Review
 from .coupon import Coupon
 from .shipping_method import ShippingMethod
 from .payment_method import PaymentMethod
+from .customer_message import CustomerMessage
+from .product_request import ProductRequest, ProductRequestImage

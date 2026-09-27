@@ -1,0 +1,76 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}طلب منتج غير متوفر | متجر كنان{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm p-4">
+                <h3 class="fw-bold text-center mb-2"><i class="fa-solid fa-magnifying-glass-plus text-primary me-2"></i> اطلب منتجًا غير موجود في المتجر </h3>
+                <p class="text-muted text-center mb-4">لم تجد ما تبحث عنه؟ أخبرنا بالتفاصيل وسنحاول توفيره لك</p>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">الاسم</label>
+                            <input type="text" name="full_name" class="form-control" value="{{ default_name }}" readonly required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">رقم الهاتف</label>
+                            <input type="text" name="phone" class="form-control" dir="ltr" value="{{ default_phone }}" readonly required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">اسم المنتج المطلوب</label>
+                        <input type="text" name="product_name" class="form-control" placeholder="مثال: شاحن لاسلكي 30 واط" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">مواصفات المنتج (اختياري)</label>
+                        <textarea name="specifications" class="form-control" rows="3" placeholder="اللون، الحجم، الماركة، أي تفاصيل تساعدنا في التوفير..."></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">الكمية المطلوبة</label>
+                            <input type="number" name="quantity" class="form-control" value="1" min="1">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">السعر التقريبي (اختياري)</label>
+                            <input type="number" step="0.01" name="approximate_price" class="form-control" placeholder="بالدولار $">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">صور للمنتج (اختياري، حتى 5 صور)</label>
+                        <input type="file" name="images" class="form-control" accept="image/*" multiple>
+                        <div class="form-text">تقدر تختار أكثر من صورة دفعة وحدة (حتى 5 صور).</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">رابط فيديو للمنتج (اختياري)</label>
+                        <input type="url" name="video_url" class="form-control" dir="ltr" placeholder="https://youtube.com/... أو رابط تيك توك">
+                        <div class="form-text">لو لقيت فيديو للمنتج بيوتيوب أو تيك توك أو أي منصة، الصق الرابط هنا.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ملاحظات إضافية (اختياري)</label>
+                        <textarea name="notes" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">إرسال الطلب</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

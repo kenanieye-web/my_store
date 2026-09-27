@@ -28,6 +28,8 @@
                     <th>الاسم</th>
                     <th>شركة التوصيل</th>
                     <th>التكلفة</th>
+                    <th>سعر CBM</th>
+                    <th>الحد الأدنى</th>
                     <th>مدة التوصيل</th>
                     <th>المدن المشمولة</th>
                     <th>الحالة</th>
@@ -39,7 +41,9 @@
                 <tr>
                     <td class="fw-bold">{{ method.name }}</td>
                     <td>{{ method.company_name|default:"—" }}</td>
-                    <td>{{ method.cost }} ر.ي</td>
+                    <td>{{ method.cost }} $</td>
+                    <td>{{ method.price_per_cbm }} $</td>
+                    <td>{{ method.min_charge }} $</td>
                     <td>{{ method.estimated_days }} يوم</td>
                     <td>{{ method.covered_cities|default:"كل المدن" }}</td>
                     <td>
@@ -90,8 +94,16 @@
                                     <input type="text" name="company_name" value="{{ method.company_name }}" class="form-control">
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">التكلفة</label>
+                                    <label class="form-label">التكلفة ($)</label>
                                     <input type="number" step="0.01" name="cost" value="{{ method.cost }}" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">سعر الشحن لكل متر مكعب - CBM ($)</label>
+                                    <input type="number" step="0.01" name="price_per_cbm" value="{{ method.price_per_cbm }}" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">الحد الأدنى لتكلفة الشحن ($)</label>
+                                    <input type="number" step="0.01" name="min_charge" value="{{ method.min_charge }}" class="form-control">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">مدة التوصيل (أيام)</label>
@@ -114,7 +126,7 @@
                     </div>
                 </div>
                 {% empty %}
-                <tr><td colspan="7" class="text-center text-muted py-4">لا توجد طرق شحن مضافة بعد</td></tr>
+                <tr><td colspan="9" class="text-center text-muted py-4">لا توجد طرق شحن مضافة بعد</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -141,8 +153,16 @@
                     <input type="text" name="company_name" class="form-control">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">التكلفة</label>
+                    <label class="form-label">التكلفة ($)</label>
                     <input type="number" step="0.01" name="cost" value="0" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">سعر الشحن لكل متر مكعب - CBM ($)</label>
+                    <input type="number" step="0.01" name="price_per_cbm" value="0" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">الحد الأدنى لتكلفة الشحن ($)</label>
+                    <input type="number" step="0.01" name="min_charge" value="0" class="form-control">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">مدة التوصيل (أيام)</label>

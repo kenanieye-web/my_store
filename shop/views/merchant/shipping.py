@@ -17,6 +17,8 @@ def shipping_list(request):
                 name=request.POST.get('name', '').strip(),
                 company_name=request.POST.get('company_name', '').strip(),
                 cost=request.POST.get('cost') or 0,
+                price_per_cbm=request.POST.get('price_per_cbm') or 0,
+                min_charge=request.POST.get('min_charge') or 0,
                 estimated_days=request.POST.get('estimated_days') or 1,
                 covered_cities=request.POST.get('covered_cities', '').strip(),
                 is_active=bool(request.POST.get('is_active')),
@@ -28,6 +30,8 @@ def shipping_list(request):
             method.name = request.POST.get('name', '').strip()
             method.company_name = request.POST.get('company_name', '').strip()
             method.cost = request.POST.get('cost') or 0
+            method.price_per_cbm = request.POST.get('price_per_cbm') or 0
+            method.min_charge = request.POST.get('min_charge') or 0
             method.estimated_days = request.POST.get('estimated_days') or 1
             method.covered_cities = request.POST.get('covered_cities', '').strip()
             method.is_active = bool(request.POST.get('is_active'))

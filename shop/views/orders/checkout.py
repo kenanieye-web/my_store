@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from shop.models import Cart, Order, OrderItem
 from django.db import transaction
+from django.contrib.auth.decorators import login_required
 
-
+@login_required(login_url='login')
 @transaction.atomic
 def checkout(request):
     """صفحة إتمام الطلب الشراء"""

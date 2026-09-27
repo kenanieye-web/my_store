@@ -10,11 +10,150 @@
                     <h3 class="mb-4 text-center fw-bold text-primary">
                         <i class="fa-solid fa-pen-to-square me-2"></i> تعديل المنتج: {{ product.name }}
                     </h3>
-                    
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
-                        {{ form.as_p }}
-                        
+
+                        <!-- المعلومات الأساسية -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ form.name.label }}</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ form.model.label }}</label>
+                            {{ form.model }}
+                            {% if form.model.errors %}<div class="text-danger small mt-1">{{ form.model.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ form.main_category.label }}</label>
+                                {{ form.main_category }}
+                                {% if form.main_category.errors %}<div class="text-danger small mt-1">{{ form.main_category.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ form.sub_category.label }}</label>
+                                {{ form.sub_category }}
+                                {% if form.sub_category.errors %}<div class="text-danger small mt-1">{{ form.sub_category.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ form.description.label }}</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ form.specifications.label }}</label>
+                            {{ form.specifications }}
+                            {% if form.specifications.errors %}<div class="text-danger small mt-1">{{ form.specifications.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ form.price.label }}</label>
+                                {{ form.price }}
+                                {% if form.price.errors %}<div class="text-danger small mt-1">{{ form.price.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ form.stock.label }}</label>
+                                {{ form.stock }}
+                                {% if form.stock.errors %}<div class="text-danger small mt-1">{{ form.stock.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ form.image.label }}</label>
+                            {% if product.image %}
+                                <div class="mb-2">
+                                    <img src="{{ product.image.url }}" style="max-height: 100px;" class="rounded border">
+                                </div>
+                            {% endif %}
+                            {{ form.image }}
+                            {% if form.image.errors %}<div class="text-danger small mt-1">{{ form.image.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="form-check mb-4">
+                            {{ form.is_available }}
+                            <label class="form-check-label fw-bold">{{ form.is_available.label }}</label>
+                        </div>
+
+                        <!-- صندوق: أبعاد العلبة الفردية (لحساب شحن القطعة الواحدة) -->
+                        <div class="card border-primary-subtle mb-4">
+                            <div class="card-header bg-primary bg-opacity-10 fw-bold text-primary">
+                                <i class="fa-solid fa-box me-2"></i> أبعاد العلبة الفردية (لحساب الشحن)
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">{{ form.length_cm.label }}</label>
+                                        {{ form.length_cm }}
+                                        {% if form.length_cm.errors %}<div class="text-danger small mt-1">{{ form.length_cm.errors }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">{{ form.width_cm.label }}</label>
+                                        {{ form.width_cm }}
+                                        {% if form.width_cm.errors %}<div class="text-danger small mt-1">{{ form.width_cm.errors }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">{{ form.height_cm.label }}</label>
+                                        {{ form.height_cm }}
+                                        {% if form.height_cm.errors %}<div class="text-danger small mt-1">{{ form.height_cm.errors }}</div>{% endif %}
+                                    </div>
+                                </div>
+                                <div class="mb-0">
+                                    <label class="form-label">{{ form.weight_kg.label }}</label>
+                                    {{ form.weight_kg }}
+                                    {% if form.weight_kg.help_text %}<div class="text-muted small mt-1">{{ form.weight_kg.help_text }}</div>{% endif %}
+                                    {% if form.weight_kg.errors %}<div class="text-danger small mt-1">{{ form.weight_kg.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- صندوق: بيانات الكرتون الرئيسي (Master Carton) -->
+                        <div class="card border-success-subtle mb-4">
+                            <div class="card-header bg-success bg-opacity-10 fw-bold text-success">
+                                <i class="fa-solid fa-boxes-stacked me-2"></i> بيانات الكرتون (لحساب شحن أدق بالجملة)
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.units_per_carton.label }}</label>
+                                    {{ form.units_per_carton }}
+                                    {% if form.units_per_carton.errors %}<div class="text-danger small mt-1">{{ form.units_per_carton.errors }}</div>{% endif %}
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">{{ form.carton_length_cm.label }}</label>
+                                        {{ form.carton_length_cm }}
+                                        {% if form.carton_length_cm.errors %}<div class="text-danger small mt-1">{{ form.carton_length_cm.errors }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">{{ form.carton_width_cm.label }}</label>
+                                        {{ form.carton_width_cm }}
+                                        {% if form.carton_width_cm.errors %}<div class="text-danger small mt-1">{{ form.carton_width_cm.errors }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">{{ form.carton_height_cm.label }}</label>
+                                        {{ form.carton_height_cm }}
+                                        {% if form.carton_height_cm.errors %}<div class="text-danger small mt-1">{{ form.carton_height_cm.errors }}</div>{% endif %}
+                                    </div>
+                                </div>
+                                <div class="mb-0">
+                                    <label class="form-label">{{ form.carton_weight_kg.label }}</label>
+                                    {{ form.carton_weight_kg }}
+                                    {% if form.carton_weight_kg.help_text %}<div class="text-muted small mt-1">{{ form.carton_weight_kg.help_text }}</div>{% endif %}
+                                    {% if form.carton_weight_kg.errors %}<div class="text-danger small mt-1">{{ form.carton_weight_kg.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary btn-lg">تحديث التعديلات</button>
                             <a href="{% url 'merchant_product_list' %}" class="btn btn-outline-secondary">إلغاء</a>

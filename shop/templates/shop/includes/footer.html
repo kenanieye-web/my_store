@@ -13,7 +13,7 @@
                 <div class="col-lg-3 col-md-6">
                     <h6 class="fw-bold mb-1" style="color: #e67e22;">روابط سريعة</h6>
                     <ul class="list-unstyled text-white-50 small lh-lg">
-                        <li><a href="#" class="text-decoration-none text-white-50">من نحن</a></li>
+                        <li><a href="#" class="text-decoration-none text-white-50" data-bs-toggle="modal" data-bs-target="#aboutModal">من نحن</a></li>
                         <li><a href="#" class="text-decoration-none text-white-50">الصيانة والدعم</a></li>
                         <li><a href="{% url 'product_list' %}" class="text-decoration-none text-white-50">جميع المنتجات</a></li>
                     </ul>
@@ -22,9 +22,9 @@
                 <div class="col-lg-3 col-md-4">
                     <h6 class="fw-bold mb-3" style="color: #e67e22;">سياسات المتجر</h6>
                     <ul class="list-unstyled text-white-50 small lh-lg">
-                        <li><a href="#" class="text-decoration-none text-white-50">سياسة الخصوصية</a></li>
-                        <li><a href="#" class="text-decoration-none text-white-50">شروط الاستخدام</a></li>
-                        <li><a href="#" class="text-decoration-none text-white-50">سياسة الإرجاع والترجيع</a></li>
+                        <li><a href="{% url 'static_page' slug='privacy-policy' %}" class="text-decoration-none text-white-50">سياسة الخصوصية</a></li>
+                        <li><a href="{% url 'static_page' slug='terms-of-use' %}" class="text-decoration-none text-white-50">شروط الاستخدام</a></li>
+                        <li><a href="{% url 'static_page' slug='return-policy' %}" class="text-decoration-none text-white-50">سياسة الإرجاع والترجيع</a></li>
                     </ul>
                 </div>
 

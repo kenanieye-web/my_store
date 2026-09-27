@@ -11,6 +11,15 @@
     </div>
 </div>
 
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show py-2" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
 <div class="row g-4">
     <!-- نموذج إضافة تصنيف جديد -->
     <div class="col-lg-4">
@@ -18,6 +27,7 @@
             <h5 class="fw-bold mb-3 text-primary"><i class="bx bx-plus-circle me-1"></i> إضافة تصنيف جديد</h5>
             <form method="POST">
                 {% csrf_token %}
+                <input type="hidden" name="action" value="add">
                 <div class="mb-3">
                     <label class="form-label fw-bold small">اسم التصنيف</label>
                     <input type="text" name="name" class="form-control" placeholder="مثال: إلكترونيات، إكسسوارات..." required>
@@ -65,9 +75,57 @@
                             </td>
                             <td><code class="text-secondary">{{ cat.slug }}</code></td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-light text-danger border"><i class="bx bx-trash"></i></a>
+                                <div class="d-flex gap-1">
+                                    <button class="btn btn-sm btn-light text-primary border" data-bs-toggle="modal" data-bs-target="#editCategoryModal{{ cat.id }}" title="تعديل">
+                                        <i class="bx bx-edit"></i>
+                                    </button>
+                                    <form method="post" onsubmit="return confirm('هل أنت متأكد من حذف هذا التصنيف؟');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="category_id" value="{{ cat.id }}">
+                                        <button type="submit" class="btn btn-sm btn-light text-danger border" title="حذف">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
+
+                        <!-- Modal تعديل التصنيف -->
+                        <div class="modal fade" id="editCategoryModal{{ cat.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <form method="post" class="modal-content">
+                                    {% csrf_token %}
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">تعديل التصنيف</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="hidden" name="action" value="edit">
+                                        <input type="hidden" name="category_id" value="{{ cat.id }}">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold small">اسم التصنيف</label>
+                                            <input type="text" name="name" value="{{ cat.name }}" required class="form-control">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold small">التصنيف الرئيسي (اختياري)</label>
+                                            <select name="parent" class="form-select">
+                                                <option value="">-- تصنيف رئيسي (بدون أب) --</option>
+                                                {% for main_cat in main_categories %}
+                                                    {% if main_cat.id != cat.id %}
+                                                        <option value="{{ main_cat.id }}" {% if cat.parent_id == main_cat.id %}selected{% endif %}>{{ main_cat.name }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                                        <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                         {% empty %}
                         <tr>
                             <td colspan="5" class="text-center py-4 text-muted">لا توجد تصنيفات مضافة حتى الآن.</td>

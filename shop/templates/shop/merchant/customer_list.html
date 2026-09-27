@@ -1,6 +1,6 @@
 {% extends 'admin/veltrix_base.html' %}
 
-{% block title %}إدارة العملاء - Veltrix{% endblock %}
+{% block title %}إدارة العملاء - متجر كنان{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -8,11 +8,86 @@
         <h3 class="fw-bold mb-1">إدارة العملاء</h3>
         <p class="text-muted mb-0">قائمة بجميع العملاء المسجلين في المتجر وبيانات التواصل الخاصة بهم</p>
     </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+        <i class="bx bx-user-plus me-1"></i> إضافة عميل جديد
+    </button>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show py-2" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                    <i class="bx bx-group fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-muted small">إجمالي العملاء</div>
+                    <div class="fw-bold fs-4">{{ total_customers }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                    <i class="bx bx-user-plus fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-muted small">عملاء جدد (آخر 30 يوم)</div>
+                    <div class="fw-bold fs-4">{{ new_this_month }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                    <i class="bx bx-repeat fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-muted small">عملاء متكررون (أكثر من طلب)</div>
+                    <div class="fw-bold fs-4">{{ returning_customers }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="card border-0 shadow-sm rounded-3">
     <div class="card-header bg-white py-3 border-0">
-        <h5 class="fw-bold mb-0 text-dark"><i class="bx bx-group me-2 text-primary"></i> قائمة العملاء</h5>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bx bx-group me-2 text-primary"></i> قائمة العملاء</h5>
+                        <form method="get" class="d-flex gap-2">
+                <input type="text" name="q" value="{{ search_query }}" class="form-control form-control-sm" placeholder="ابحث بالاسم أو الهاتف..." style="width: 220px;">
+                <select name="city" class="form-select form-select-sm" style="width: 150px;">
+                    <option value="">كل المدن</option>
+                    {% for city in all_cities %}
+                        <option value="{{ city }}" {% if city_filter == city %}selected{% endif %}>{{ city }}</option>
+                    {% endfor %}
+                </select>
+                <select name="type" class="form-select form-select-sm" style="width: 150px;">
+                    <option value="">كل التصنيفات</option>
+                    {% for value, label in customer_type_choices %}
+                        <option value="{{ value }}" {% if type_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bx bx-search"></i></button>
+                {% if search_query or city_filter or type_filter %}
+                    <a href="{% url 'customer_list' %}" class="btn btn-sm btn-outline-secondary">إلغاء</a>
+                {% endif %}
+            </form>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -23,6 +98,8 @@
                     <th>رقم الجوال</th>
                     <th>البريد الإلكتروني</th>
                     <th>المدينة</th>
+                    <th>النشاط</th>
+                    <th>تصنيف العميل</th>
                     <th>تاريخ التسجيل</th>
                     <th class="text-center">إجراءات</th>
                 </tr>
@@ -47,6 +124,21 @@
                     <td>
                         <span class="badge bg-soft-info text-info">{{ customer.city|default:"عدن" }}</span>
                     </td>
+                    <td>
+                        {% if customer.orders_count > 1 %}
+                            <span class="badge bg-warning-subtle text-warning">متكرر ({{ customer.orders_count }} طلب)</span>
+                        {% elif customer.orders_count == 1 %}
+                            <span class="badge bg-success-subtle text-success">اشترى مرة</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary">لم يشترِ بعد</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm border-0 {% if customer.customer_type == 'vip' %}bg-warning-subtle text-warning{% elif customer.customer_type == 'wholesale' %}bg-info-subtle text-info{% else %}bg-light text-muted{% endif %}"
+                                data-bs-toggle="modal" data-bs-target="#editTypeModal{{ customer.id }}">
+                            {{ customer.get_customer_type_display }} <i class="bx bx-edit-alt small"></i>
+                        </button>
+                    </td>
                     <td>{{ customer.user.date_joined|date:"Y-m-d H:i" }}</td>
                     <td class="text-center">
                         {% if customer.phone %}
@@ -58,13 +150,76 @@
                         {% endif %}
                     </td>
                 </tr>
+
+                <!-- Modal تغيير تصنيف العميل -->
+                <div class="modal fade" id="editTypeModal{{ customer.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-sm">
+                        <form method="post" class="modal-content">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="edit_type">
+                            <input type="hidden" name="customer_id" value="{{ customer.id }}">
+                            <div class="modal-header">
+                                <h6 class="modal-title">تصنيف العميل: {{ customer.user.get_full_name|default:customer.user.username }}</h6>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                {% for value, label in customer_type_choices %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="customer_type" id="type{{ value }}_{{ customer.id }}" value="{{ value }}" {% if customer.customer_type == value %}checked{% endif %}>
+                                    <label class="form-check-label" for="type{{ value }}_{{ customer.id }}">{{ label }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">إلغاء</button>
+                                <button type="submit" class="btn btn-primary btn-sm">حفظ</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center py-4 text-muted">لا يوجد عملاء مسجلون حالياً.</td>
+                    <td colspan="9" class="text-center py-4 text-muted">لا يوجد عملاء مطابقون لهذا البحث.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- Modal إضافة عميل جديد -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" class="modal-content">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة عميل جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">الاسم الكامل</label>
+                    <input type="text" name="full_name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">رقم الهاتف</label>
+                    <input type="text" name="phone" class="form-control" dir="ltr" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">المدينة</label>
+                    <input type="text" name="city" class="form-control" placeholder="عدن">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">العنوان (اختياري)</label>
+                    <textarea name="address" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                <button type="submit" class="btn btn-primary">إضافة العميل</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

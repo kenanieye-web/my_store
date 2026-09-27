@@ -1,0 +1,48 @@
+/* ==========================================================
+   تنسيقات مخصصة لصفحات التاجر وإدارة المتجر (تنظيم المسافات)
+   ========================================================== */
+
+/* مسافة عامة تحت أي ترويسة صفحة أو أزرار علوية */
+.page-head, .merchant-top-actions {
+  margin-bottom: 25px !important;
+}
+
+/* تنظيم صندوق سحب واستيراد المنتجات (Alibaba Scraper Box) */
+.alibaba-scraper-box, .import-section, .card-import {
+  margin-top: 15px !important;
+  margin-bottom: 30px !important; /* تترك مسافة واضحة بين صندوق السحب وجدول المنتجات */
+}
+
+/* ضمان وجود مسافة مريحة فوق جدول المنتجات الرئيسي */
+.table-responsive, .merchant-products-table {
+  margin-top: 10px !important;
+}
+/* إلغاء المسافات الفوقية والتحتية الزائدة بدقة شديدة لصفحة إدارة المنتجات */
+.tight-page-container {
+    margin-top: -15px !important; /* يرفع الصفحة للأعلى لتلتصق بالخط البرتقالي */
+    padding-top: 0 !important;
+}
+
+.tight-box {
+    margin-top: 5px !important;
+    margin-bottom: 8px !important; /* تقليل المسافة بين المربعات والجدول بحدها الأدنى */
+}
+/* تخصيص زر القائمة الجانبية (الخطوط الثلاثة) في قالب Veltrix لتكون بيضاء وواضحة */
+.button-menu-mobile, 
+.button-menu-mobile i,
+.topnav-menu .nav-link {
+  color: #ffffff !important;
+}
+
+/* تخصيص اسم المستخدم والدور (تاجر/مسؤول) في شريط Veltrix العلوي */
+.topnav-menu .profile-user-name,
+.user-name,
+.dropdown-user-name {
+  color: #ffffff !important; /* اسم kenan أبيض ناصع */
+}
+
+.topnav-menu .profile-user-role,
+.user-role,
+.dropdown-user-role {
+  color: #cbd5e1 !important; /* عبارة تاجر/مسؤول بلون رمادي فاتح وواضح */
+}

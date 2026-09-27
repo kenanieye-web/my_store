@@ -7,7 +7,17 @@ class ShippingMethod(django.db.models.Model):
         max_length=100, blank=True, null=True, verbose_name="اسم شركة التوصيل"
     )
     cost = django.db.models.DecimalField(
-        max_digits=10, decimal_places=2, default=0, verbose_name="تكلفة الشحن"
+        max_digits=10, decimal_places=2, default=0,
+        verbose_name="رسوم ثابتة إضافية",
+        help_text="رسوم تُضاف دائمًا فوق تكلفة الحجم (اتركها 0 إن لم ترغب برسوم ثابتة)"
+    )
+    price_per_cbm = django.db.models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        verbose_name="سعر الشحن لكل متر مكعب (CBM)"
+    )
+    min_charge = django.db.models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        verbose_name="الحد الأدنى لتكلفة الشحن"
     )
     estimated_days = django.db.models.PositiveIntegerField(
         default=1, verbose_name="مدة التوصيل المتوقعة (أيام)"

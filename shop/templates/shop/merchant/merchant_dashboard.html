@@ -173,10 +173,18 @@
             </thead>
             <tbody>
                 {% if recent_orders %}
-                    {% for order in recent_orders %}
+                                   {% for order in recent_orders %}
                     <tr>
                         <td class="fw-bold text-primary">#{{ order.id }}</td>
-                        <td>{{ order.customer_name|default:order.user.username }}</td>
+                        <td>
+                            {% if order.customer_name %}
+                                {{ order.customer_name }}
+                            {% elif order.user %}
+                                {{ order.user.username }}
+                            {% else %}
+                                زائر
+                            {% endif %}
+                        </td>
                         <td>{{ order.city|default:"عدن" }}</td>
                         <td>{{ order.total_price }} ر.ي</td>
                         <td>

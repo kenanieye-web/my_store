@@ -23,15 +23,29 @@ class ProductForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        fields = ['name', 'model', 'description', 'price', 'stock', 'image', 'is_available']
+        fields = [
+            'name', 'model', 'description', 'specifications', 'price', 'stock', 'image', 'is_available',
+            'length_cm', 'width_cm', 'height_cm', 'weight_kg',
+            'units_per_carton', 'carton_length_cm', 'carton_width_cm', 'carton_height_cm', 'carton_weight_kg',
+        ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'اسم المنتج'}),
             'model': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'موديل المنتج'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'وصف المنتج'}),
+            'specifications': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'المواصفات الفنية (كل سطر: الخاصية: القيمة)، مثال:\nاللون: أسود\nالطول: 1 متر'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'السعر'}),
             'stock': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'المخزون'}),
             'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'is_available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'length_cm': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'الطول بالسنتيمتر', 'step': '0.1'}),
+            'width_cm': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'العرض بالسنتيمتر', 'step': '0.1'}),
+            'height_cm': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'الارتفاع بالسنتيمتر', 'step': '0.1'}),
+            'weight_kg': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'مثال: 0.050 لوزن 50 غرام (اختياري)', 'step': '0.001'}),
+            'units_per_carton': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'عدد القطع داخل الكرتون الواحد'}),
+            'carton_length_cm': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'طول الكرتون بالسنتيمتر', 'step': '0.1'}),
+            'carton_width_cm': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'عرض الكرتون بالسنتيمتر', 'step': '0.1'}),
+            'carton_height_cm': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'ارتفاع الكرتون بالسنتيمتر', 'step': '0.1'}),
+            'carton_weight_kg': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'وزن الكرتون الإجمالي بالكيلوغرام', 'step': '0.01'}),
         }
 
     def __init__(self, *args, **kwargs):

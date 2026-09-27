@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from django.core.paginator import Paginator
 from shop.models import Product, Category
 from django.db.models import Q
 
@@ -27,6 +28,11 @@ def product_list(request, category_slug=None):
         products = products.filter(Q(category=current_category) | Q(category__parent=current_category))
         
 # الـ context و return يجب أن يكونا هنا (في مستوى بداية الدالة وليس داخل الـ if)
+    # الترقيم الصفحي (Pagination): 12 منتج في كل صفحة
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get('page')
+    products = paginator.get_page(page_number)
+
     context = {
         'products': products,
         'categories': categories,

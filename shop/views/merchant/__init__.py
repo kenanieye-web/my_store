@@ -19,3 +19,4 @@ from .banners_list import banners_list
 from .affiliate_marketing import affiliate_marketing
 from .add_staff import add_staff
 from .edit_staff_permissions import edit_staff_permissions
+from .bulk_product_actions import bulk_product_actions
