@@ -1,7 +1,7 @@
 {% load static %}
 <!-- 2. الهيدر الأوسط (الشعار + البحث + الحساب) -->
 <div class="bg-white py-3 border-bottom w-100">
-    <div class="container-fluid container-lg d-flex align-items-center justify-content-between gap-3">
+    <div class="container-fluid container-lg d-flex align-items-center justify-content-between gap-2 gap-md-3 flex-nowrap">
         
         <!-- الشعار -->
         <div class="header-brand">
@@ -25,7 +25,7 @@
         </div>
 
         <!-- أزرار العمليات والتسجيل -->
-        <div class="header-actions d-flex align-items-center gap-2 flex-wrap">
+        <div class="header-actions d-flex align-items-center gap-2 flex-nowrap">
             <!-- زر السلة -->
             <a href="{% url 'cart_detail' %}" class="btn btn-kenan-orange shadow-sm btn-sm px-3 py-2 position-relative">
                 <i class="fa-solid fa-cart-shopping me-1"></i> السلة
@@ -37,27 +37,27 @@
             </a>
 
             {% if request.user.is_authenticated %}
-                <!-- لوحة التحكم (للتاجر/المشرف) -->
+                <!-- لوحة التحكم (للتاجر/المشرف): مخفية في الجوال وموجودة في القائمة الجانبية -->
                 {% if request.user.is_staff %}
-                    <a href="{% url 'merchant_dashboard' %}" class="btn btn-warning text-dark btn-sm fw-bold py-2">لوحة التحكم</a>
+                    <a href="{% url 'merchant_dashboard' %}" class="btn btn-warning text-dark btn-sm fw-bold py-2 d-none d-md-inline-block">لوحة التحكم</a>
                 {% endif %}
 
-                <!-- حسابي -->
-                <a href="{% url 'customer_profile' %}" class="btn btn-outline-kenan btn-sm fw-bold py-2">
-                    <i class="fa-solid fa-user me-1"></i> حسابي
+                <!-- حسابي: أيقونة فقط في الجوال -->
+                <a href="{% url 'customer_profile' %}" class="btn btn-outline-kenan btn-sm fw-bold py-2" title="حسابي">
+                    <i class="fa-solid fa-user"></i><span class="d-none d-md-inline ms-1">حسابي</span>
                 </a>
 
-                <!-- تسجيل الخروج -->
-                <form id="logout-form" action="{% url 'logout' %}" method="POST" class="d-inline">
+                <!-- تسجيل الخروج: مخفي في الجوال وموجود في القائمة الجانبية -->
+                <form id="logout-form" action="{% url 'logout' %}" method="POST" class="d-none d-md-inline m-0">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-light btn-sm text-danger py-2 border" title="تسجيل الخروج">
                         <i class="fa-solid fa-right-from-bracket"></i>
                     </button>
                 </form>
             {% else %}
-                <!-- تسجيل الدخول وحساب جديد -->
+                <!-- تسجيل الدخول وحساب جديد (حساب جديد مخفي في الجوال) -->
                 <a href="{% url 'login' %}" class="btn btn-outline-kenan btn-sm fw-bold py-2">تسجيل الدخول</a>
-                <a href="{% url 'register_user' %}" class="btn btn-sm btn-kenan-orange text-white fw-bold py-2">حساب جديد</a>
+                <a href="{% url 'register_user' %}" class="btn btn-sm btn-kenan-orange text-white fw-bold py-2 d-none d-md-inline-block">حساب جديد</a>
             {% endif %}
         </div>
 
