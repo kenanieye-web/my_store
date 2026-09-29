@@ -5,8 +5,19 @@ Django settings for my_store project.
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+# ===== حماية البيانات (الموقع الحي) =====
+# مجلد البيانات الحية: خارج مجلد المشروع، فلا يلمسه git pull ولا git stash ولا git clean.
+# هذا المجلد موجود على PythonAnywhere فقط، وغير موجود على جهازك المحلي،
+# لذلك يعمل الكود تلقائياً بشكل صحيح في الحالتين بدون أي متغيرات بيئة
+# (ويعمل في الطرفية Console والـ WSGI والمهام المجدولة بنفس الطريقة).
+LIVE_DATA_DIR = Path('/home/Kenan2026/data')
+ON_LIVE_SERVER = LIVE_DATA_DIR.is_dir()
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -69,16 +80,36 @@ TEMPLATES = [
 WSGI_APPLICATION = 'my_store.wsgi.application'
 
 
-# Database
-import dj_database_url
+# Database (SQLite)
+# - على الموقع الحي: /home/Kenan2026/data/db.sqlite3  (خارج المشروع وخارج Git)
+# - على جهازك المحلي: BASE_DIR / 'db.sqlite3'
+# - يمكن تجاوز المسار بمتغير البيئة DJANGO_DB_PATH عند الحاجة.
+_db_override = os.environ.get('DJANGO_DB_PATH')
+if _db_override:
+    DB_PATH = Path(_db_override)
+elif ON_LIVE_SERVER:
+    DB_PATH = LIVE_DATA_DIR / 'db.sqlite3'
+else:
+    DB_PATH = BASE_DIR / 'db.sqlite3'
 
-# Database - Supabase PostgreSQL Cloud
+# حماية أساسية: على الموقع الحي لا نسمح أبداً بإنشاء قاعدة فارغة جديدة بصمت
+# (هذا ما يحدث عندما يفقد المشروع ملف القاعدة ثم يشغَّل migrate).
+if ON_LIVE_SERVER and not DB_PATH.exists():
+    raise ImproperlyConfigured(
+        f'ملف قاعدة البيانات غير موجود: {DB_PATH} . '
+        'تم إيقاف المشروع عمداً حتى لا تُنشأ قاعدة فارغة. '
+        'استعد الملف من ~/backups ثم أعد المحاولة.'
+    )
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DB_PATH,
     }
 }
+
+# نوع المفاتيح الأساسية الافتراضي (نفس النوع المستخدم حالياً؛ يُسكت تحذيرات W042 دون أي migration)
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -119,8 +150,14 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files (Uploaded by user)
+# اختياري: عندما تنقل الصور إلى /home/Kenan2026/data/media يستخدمها الموقع تلقائياً.
+# (غيّر أيضاً مسار /media/ في تبويب Web > Static files إلى /home/Kenan2026/data/media)
+# وقبل ذلك (إن لم يوجد ذلك المجلد) تبقى الصور في BASE_DIR / 'media' كما هي الآن.
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+if (LIVE_DATA_DIR / 'media').is_dir():
+    MEDIA_ROOT = LIVE_DATA_DIR / 'media'
+else:
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Email
