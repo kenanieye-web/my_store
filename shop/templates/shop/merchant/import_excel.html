@@ -1,0 +1,75 @@
+{% extends 'admin/veltrix_base.html' %}
+
+{% block title %}استيراد المنتجات من إكسل{% endblock %}
+
+{% block content %}
+<div class="container-fluid" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="m-0 fw-bold" style="color: #1b5299;">
+                        <i class="fa-solid fa-file-excel text-success me-2"></i>
+                        استيراد المنتجات من ملف إكسل
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <!-- الخطوة 1: القالب -->
+                    <div class="mb-4 p-3 rounded-3 bg-light border">
+                        <div class="fw-bold mb-1">1. حمّل القالب</div>
+                        <p class="text-muted small mb-2">
+                            القالب يحتوي كل أعمدة المنتج مع ورقة تعليمات. لا تغيّر عناوين الأعمدة.
+                        </p>
+                        <a href="{% url 'download_excel_template' %}" class="btn btn-outline-success btn-sm fw-bold">
+                            <i class="fa-solid fa-download me-1"></i> تحميل قالب إكسل
+                        </a>
+                    </div>
+
+                    <!-- الخطوة 2: الرفع -->
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="fw-bold mb-2">2. ارفع الملفات</div>
+
+                        <div class="mb-3">
+                            <label for="excel_file" class="form-label fw-bold">ملف الإكسل <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="excel_file" name="excel_file"
+                                   accept=".xlsx,.xls" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="images_zip" class="form-label fw-bold">ملف الصور المضغوط (اختياري)</label>
+                            <input type="file" class="form-control" id="images_zip" name="images_zip"
+                                   accept=".zip">
+                            <div class="form-text">
+                                اكتب في عمودي «صورة المنتج» و«صورة العلبة» اسم الصورة كما هو داخل الملف المضغوط،
+                                بامتداد أو بدون (مثل <span dir="ltr">S-137</span> أو <span dir="ltr">S-137.jpg</span>).
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-kenan-orange px-4">
+                                <i class="fa-solid fa-upload me-1"></i> استيراد المنتجات
+                            </button>
+                            <a href="{% url 'merchant_product_list' %}" class="btn btn-light border">رجوع</a>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <ul class="small text-muted mb-0 lh-lg">
+                        <li>المطلوب للمنتج الجديد: اسم المنتج، التصنيف، السعر.</li>
+                        <li>عمود ID فارغ = منتج جديد، ورقم منتج موجود = تحديثه.</li>
+                        <li>الصف الذي فيه خطأ يُتجاوز مع ذكر رقم سطره، ويُستورد الباقي.</li>
+                    </ul>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

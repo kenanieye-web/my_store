@@ -13,9 +13,9 @@ from shop.views.merchant.order_list import order_list
 from shop.views.merchant.order_detail import order_detail
 from shop.views.merchant.customer_list import customer_list
 from shop.views.merchant.sales_report import sales_report
-from shop.views.merchant.download_template import download_template
-from shop.views.merchant.import_excel import import_excel
+from shop.views.merchant.import_excel import download_excel_template
 from shop.views.merchant.import_excel import import_product_from_url
+from shop.views.merchant.import_excel import import_excel
 from shop.views.merchant.staff_user_list import staff_user_list
 from shop.views.merchant.coupons import merchant_coupons_list
 from shop.views.merchant import delete_product
@@ -24,6 +24,7 @@ from shop.views.merchant.customer_messages import customer_messages_list
 from shop.views.merchant.category_list import merchant_category_list
 from shop.views.merchant.bulk_product_actions import bulk_product_actions
 from shop.views.merchant.export_product_requests import export_product_request_pdf, export_product_request_excel
+from django.urls import path, include
 from shop.views.merchant.export_orders import (
     export_orders_excel, 
     export_orders_pdf, 
@@ -48,7 +49,7 @@ urlpatterns = [
     path('merchant/product-requests/', product_requests_list, name='product_requests_list'),
     path('merchant/product-requests/<int:pk>/export/pdf/', export_product_request_pdf, name='export_product_request_pdf'),
     path('merchant/product-requests/<int:pk>/export/excel/', export_product_request_excel, name='export_product_request_excel'),
-
+    path('api/', include('shop.api.urls')),
     # مسارات سلة المشتريات
     path('cart/', cart_detail, name='cart_detail'),
     path('cart/add/<int:product_id>/', add_to_cart, name='add_to_cart'),
@@ -89,8 +90,11 @@ urlpatterns = [
     #path('merchant/loyalty/', loyalty_program, name='loyalty_program'),
     #path('merchant/banners/', banners_list, name='banners_list'),
     #path('merchant/affiliate/', affiliate_marketing, name='affiliate_marketing'),
-    # مسارات استيراد وتصدير المنتجات (مطابقة لأسماء القالب بـ dash)
-    path('merchant/products/download-template/', download_template, name='download-template'),
+
+    # مسارات استيراد وتصدير المنتجات
+    # الاسمان يشيران لنفس الدالة الجديدة (22 عموداً) ليعمل أي قالب يستخدم أحدهما
+    path('merchant/products/download-template/', download_excel_template, name='download_excel_template'),
+    path('merchant/products/download-template/', download_excel_template, name='download-template'),
     path('merchant/products/import-excel/', import_excel, name='import-excel'),
 
     # مسارات تصدير جميع الطلبات (Excel / PDF)

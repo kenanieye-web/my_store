@@ -18,11 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib.auth import views as auth_views  # 1. أضف هذا السطر مع الاستيرادات في الأعلى
+from django.contrib.auth import views as auth_views 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
+    path('api/', include('shop.api.urls')),
+
     # 2. أضف مسارات استعادة كلمة المرور هنا
     path('password_reset/', auth_views.PasswordResetView.as_view(template_name='shop/password_reset.html'), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='shop/password_reset_done.html'), name='password_reset_done'),

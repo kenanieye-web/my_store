@@ -1,1 +1,0 @@
-from .checkout import checkout

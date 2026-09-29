@@ -29,9 +29,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'shop',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -54,10 +58,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.media',
+                'django.template.context_processors.media',  # تمكين الميديا داخل القوالب
                 'shop.context_processors.nav_categories',
-'shop.context_processors.cart_summary', 
-                  # تمكين الميديا داخل القوالب
+                'shop.context_processors.cart_summary',
             ],
         },
     },
@@ -125,3 +128,19 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # حماية النطاق والسماح بطلب الدخول عبر بروتوكول الآمان والنطاق الخاص بك
 CSRF_TRUSTED_ORIGINS = ['https://kenan2026.pythonanywhere.com']
 AUTH_USER_MODEL = 'shop.CustomUser'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+# ===== واجهة API لتطبيق الجوال =====
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # مفتوح محلياً فقط ومغلق على الموقع الحي
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {'anon': '100/min', 'user': '200/min'},
+}
