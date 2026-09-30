@@ -31,6 +31,27 @@ class Order(django.db.models.Model):
     address = django.db.models.TextField(verbose_name="العنوان")
     phone = django.db.models.CharField(max_length=20, verbose_name="رقم الهاتف")
     total_price = django.db.models.DecimalField(max_digits=10, decimal_places=2, verbose_name="السعر الكلي")
+
+    # ---- حقول جديدة: الشحن والدفع (اختيارية، لا تؤثر على الطلبات القديمة) ----
+    shipping_method = django.db.models.ForeignKey(
+        'shop.ShippingMethod',
+        on_delete=django.db.models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="طريقة الشحن"
+    )
+    payment_method = django.db.models.ForeignKey(
+        'shop.PaymentMethod',
+        on_delete=django.db.models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="طريقة الدفع"
+    )
+    shipping_cost = django.db.models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        verbose_name="تكلفة الشحن"
+    )
+
     status = django.db.models.CharField(
         max_length=20, 
         choices=STATUS_CHOICES, 

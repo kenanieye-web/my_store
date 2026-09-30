@@ -39,7 +39,16 @@ class ShippingMethod(django.db.models.Model):
         return self.name
 
     def get_cities_list(self):
-        """إرجاع قائمة بأسماء المدن بعد تقسيم النص المفصول بفواصل"""
+        """قائمة المدن، تقبل الفاصلة العربية (،) واللاتينية (,)"""
         if not self.covered_cities:
             return []
-        return [city.strip() for city in self.covered_cities.split(',') if city.strip()]
+        text = self.covered_cities.replace('،', ',')
+        return [city.strip() for city in text.split(',') if city.strip()]
+
+    def covers_city(self, city):
+        """إن كانت قائمة المدن فارغة فالطريقة تشمل كل المدن"""
+        cities = self.get_cities_list()
+        city = (city or '').strip()
+        if not cities or not city:
+            return True
+        return city in cities

@@ -9,6 +9,8 @@ from shop.models import (
     Category, Coupon, Customer, Order, OrderItem, PaymentMethod,
     Product, ProductImage, ShippingMethod,
 )
+from shop.models.product_request import ProductRequest, ProductRequestImage
+from shop.utils.shipping import calculate_shipping_cost
 
 User = get_user_model()
 
@@ -169,12 +171,23 @@ class OrderItemInputSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(min_value=1, max_value=10000)
 
 
+class ShippingQuoteSerializer(serializers.Serializer):
+    items = OrderItemInputSerializer(many=True, allow_empty=False)
+    city = serializers.CharField(required=False, allow_blank=True)
+
+
 class OrderCreateSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=100)
     city = serializers.CharField(max_length=50)
     address = serializers.CharField()
     phone = serializers.CharField(max_length=20)
     coupon_code = serializers.CharField(required=False, allow_blank=True)
+    shipping_method = serializers.PrimaryKeyRelatedField(
+        queryset=ShippingMethod.objects.filter(is_active=True)
+    )
+    payment_method = serializers.PrimaryKeyRelatedField(
+        queryset=PaymentMethod.objects.filter(is_active=True)
+    )
     items = OrderItemInputSerializer(many=True, allow_empty=False)
 
     def validate(self, attrs):
@@ -185,6 +198,10 @@ class OrderCreateSerializer(serializers.Serializer):
             if not coupon:
                 raise serializers.ValidationError({'coupon_code': 'كود الخصم غير صالح أو منتهي'})
             attrs['coupon'] = coupon
+
+        if not attrs['shipping_method'].covers_city(attrs['city']):
+            raise serializers.ValidationError(
+                {'shipping_method': 'طريقة الشحن هذه لا تغطي مدينتك'})
         return attrs
 
     @transaction.atomic
@@ -193,7 +210,12 @@ class OrderCreateSerializer(serializers.Serializer):
         items = data['items']
         subtotal = sum((i['product'].price * i['quantity'] for i in items), Decimal('0'))
         coupon = data['coupon']
-        total = apply_discount(coupon, subtotal) if coupon else subtotal
+        goods_total = apply_discount(coupon, subtotal) if coupon else subtotal
+
+        shipping = calculate_shipping_cost(
+            [(i['product'], i['quantity']) for i in items],
+            data['shipping_method'],
+        )
 
         order = Order.objects.create(
             user=user,
@@ -202,7 +224,10 @@ class OrderCreateSerializer(serializers.Serializer):
             city=data['city'],
             address=data['address'],
             phone=data['phone'],
-            total_price=total,
+            shipping_method=data['shipping_method'],
+            payment_method=data['payment_method'],
+            shipping_cost=shipping['cost'],
+            total_price=goods_total + shipping['cost'],
         )
         OrderItem.objects.bulk_create([
             OrderItem(order=order, product=i['product'],
@@ -236,12 +261,22 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    shipping_method_name = serializers.SerializerMethodField()
+    payment_method_name = serializers.SerializerMethodField()
     items = OrderItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Order
         fields = ['id', 'full_name', 'city', 'address', 'phone',
-                  'total_price', 'status', 'status_display', 'created_at', 'items']
+                  'total_price', 'shipping_cost', 'shipping_method_name',
+                  'payment_method_name', 'status', 'status_display',
+                  'created_at', 'items']
+
+    def get_shipping_method_name(self, obj):
+        return obj.shipping_method.name if obj.shipping_method else ''
+
+    def get_payment_method_name(self, obj):
+        return obj.payment_method.name if obj.payment_method else ''
 
 
 # ---------- الشحن والدفع ----------
@@ -257,3 +292,29 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentMethod
         fields = ['id', 'name', 'payment_type', 'instructions']
+
+
+# ---------- طلب منتج غير متوفر ----------
+
+class ProductRequestImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductRequestImage
+        fields = ['id', 'image']
+
+
+class ProductRequestSerializer(serializers.ModelSerializer):
+    images = ProductRequestImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ProductRequest
+        fields = [
+            'id', 'full_name', 'phone', 'product_name', 'specifications',
+            'quantity', 'approximate_price', 'video_url', 'notes',
+            'status', 'created_at', 'images',
+        ]
+        read_only_fields = ['id', 'status', 'created_at', 'images']
+
+    def validate_quantity(self, value):
+        if value < 1:
+            raise serializers.ValidationError("الكمية يجب أن تكون 1 على الأقل")
+        return value

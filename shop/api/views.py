@@ -2,18 +2,21 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import authenticate, get_user_model
 from django.db.models import Q
-from rest_framework import generics, permissions
+from rest_framework import generics, parsers, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from shop.models import Category, Order, PaymentMethod, Product, ShippingMethod
+from shop.models.product_request import ProductRequestImage
+from shop.utils.shipping import calculate_shipping_cost
 
 from .serializers import (
     CategorySerializer, LoginSerializer, OrderCreateSerializer, OrderSerializer,
     PaymentMethodSerializer, ProductDetailSerializer, ProductListSerializer,
-    RegisterSerializer, ShippingMethodSerializer, UserSerializer,
+    ProductRequestSerializer, RegisterSerializer, ShippingMethodSerializer,
+    ShippingQuoteSerializer, UserSerializer,
     apply_discount, get_valid_coupon,
 )
 
@@ -120,6 +123,7 @@ class OrderListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return (Order.objects.filter(user=self.request.user)
+                .select_related('shipping_method', 'payment_method')
                 .prefetch_related('items__product'))
 
     def get_serializer_class(self):
@@ -139,6 +143,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return (Order.objects.filter(user=self.request.user)
+                .select_related('shipping_method', 'payment_method')
                 .prefetch_related('items__product'))
 
 
@@ -165,8 +170,59 @@ class ShippingMethodListView(generics.ListAPIView):
     queryset = ShippingMethod.objects.filter(is_active=True)
 
 
+class ShippingQuoteView(APIView):
+    """يحسب تكلفة كل طريقة شحن بالـ CBM لمحتويات السلة، للمدينة المحددة."""
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        s = ShippingQuoteSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        city = s.validated_data.get('city', '')
+        items = [(i['product'], i['quantity']) for i in s.validated_data['items']]
+        quotes = []
+        for m in ShippingMethod.objects.filter(is_active=True):
+            if not m.covers_city(city):
+                continue
+            r = calculate_shipping_cost(items, m)
+            quotes.append({
+                'id': m.id,
+                'name': m.name,
+                'company_name': m.company_name,
+                'cost': str(r['cost']),
+                'delivery_days': r['delivery_days'],
+                'total_cbm': str(r['total_cbm']),
+            })
+        quotes.sort(key=lambda q: Decimal(q['cost']))
+        return Response(quotes)
+
+
 class PaymentMethodListView(generics.ListAPIView):
     serializer_class = PaymentMethodSerializer
     permission_classes = [permissions.AllowAny]
     pagination_class = None
     queryset = PaymentMethod.objects.filter(is_active=True)
+
+
+class ProductRequestCreateView(generics.CreateAPIView):
+    """طلب منتج غير متوفر (يقبل الزائر غير المسجل، وحتى 5 صور)."""
+    serializer_class = ProductRequestSerializer
+    permission_classes = [permissions.AllowAny]
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
+    MAX_IMAGES = 5
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        files = request.FILES.getlist('images')
+        if len(files) > self.MAX_IMAGES:
+            return Response({'images': [f'الحد الأقصى {self.MAX_IMAGES} صور']}, status=400)
+
+        customer = None
+        if request.user.is_authenticated:
+            customer = getattr(request.user, 'customer_profile', None)
+
+        product_request = serializer.save(customer=customer)
+        for f in files:
+            ProductRequestImage.objects.create(request=product_request, image=f)
+        return Response(self.get_serializer(product_request).data, status=201)

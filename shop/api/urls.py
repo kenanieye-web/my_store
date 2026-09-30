@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from .views_product_request import ProductRequestCreateView
 
 urlpatterns = [
     path('categories/', views.CategoryListView.as_view()),
@@ -14,4 +15,7 @@ urlpatterns = [
     path('coupons/validate/', views.CouponValidateView.as_view()),
     path('shipping-methods/', views.ShippingMethodListView.as_view()),
     path('payment-methods/', views.PaymentMethodListView.as_view()),
+    path('product-requests/', ProductRequestCreateView.as_view(), name='api-product-requests'),
+    path('shipping/quote/', views.ShippingQuoteView.as_view()),
+    path('product-requests/', views.ProductRequestCreateView.as_view()),
 ]
