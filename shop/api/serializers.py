@@ -72,11 +72,16 @@ class ProductListSerializer(serializers.ModelSerializer):
 class ProductDetailSerializer(ProductListSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     colors_list = serializers.SerializerMethodField()
+    cbm = serializers.SerializerMethodField()
+    carton_cbm = serializers.SerializerMethodField()
 
     class Meta(ProductListSerializer.Meta):
         fields = ProductListSerializer.Meta.fields + [
             'model', 'description', 'specifications',
             'colors', 'colors_list', 'video', 'images',
+            'length_cm', 'width_cm', 'height_cm', 'weight_kg',
+            'units_per_carton', 'carton_length_cm', 'carton_width_cm',
+            'carton_height_cm', 'carton_weight_kg', 'cbm', 'carton_cbm',
         ]
 
     def get_colors_list(self, obj):
@@ -84,6 +89,12 @@ class ProductDetailSerializer(ProductListSerializer):
             return []
         text = obj.colors.replace('،', ',').replace('/', ',')
         return [c.strip() for c in text.split(',') if c.strip()]
+
+    def get_cbm(self, obj):
+        return str(obj.get_cbm())
+
+    def get_carton_cbm(self, obj):
+        return str(obj.get_carton_cbm())
 
 
 # ---------- الحسابات ----------

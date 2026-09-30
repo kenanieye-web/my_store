@@ -51,7 +51,11 @@ class ProductListView(generics.ListAPIView):
 
         category = p.get('category')
         if category:
-            qs = qs.filter(Q(category__slug=category) | Q(category__parent__slug=category))
+            # يقبل الرقم أو الـ slug، ويشمل الفئة وفروعها
+            cond = Q(category__slug=category) | Q(category__parent__slug=category)
+            if category.isdigit():
+                cond |= Q(category_id=category) | Q(category__parent_id=category)
+            qs = qs.filter(cond)
 
         q = p.get('q')
         if q:
