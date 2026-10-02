@@ -1,0 +1,79 @@
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">إضافة تصنيف جديد</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label fw-bold">اسم التصنيف</label>
+          <input type="text" id="newCatName" class="form-control" placeholder="مثال: كاويات">
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-bold">يتبع للتصنيف</label>
+          <select id="newCatParent" class="form-select"></select>
+          <div class="form-text">اختر التصنيف الذي سيكون هذا التصنيف تحته، بأي عمق.</div>
+        </div>
+        <div id="newCatError" class="text-danger small d-none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+        <button type="button" class="btn btn-success" id="saveCatBtn">حفظ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const select = document.getElementById('id_category');
+  const modalEl = document.getElementById('categoryModal');
+  const nameInput = document.getElementById('newCatName');
+  const parentSelect = document.getElementById('newCatParent');
+  const errBox = document.getElementById('newCatError');
+  const saveBtn = document.getElementById('saveCatBtn');
+  const modal = new bootstrap.Modal(modalEl);
+
+  document.getElementById('btnAddCategory').addEventListener('click', function () {
+    parentSelect.innerHTML = '<option value="">— تصنيف رئيسي (بدون أب) —</option>';
+    Array.from(select.options).forEach(function (o) {
+      if (o.value) parentSelect.add(new Option(o.text, o.value));
+    });
+    parentSelect.value = select.value;   // يقترح التصنيف المختار حالياً كأب
+    nameInput.value = '';
+    errBox.classList.add('d-none');
+    modal.show();
+  });
+
+  nameInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); saveBtn.click(); }
+  });
+
+  saveBtn.addEventListener('click', async function () {
+    const fd = new FormData();
+    fd.append('name', nameInput.value);
+    fd.append('parent', parentSelect.value);
+    saveBtn.disabled = true;
+    try {
+      const r = await fetch("{% url 'merchant_category_quick_add' %}", {
+        method: 'POST', body: fd,
+        headers: {'X-CSRFToken': '{{ csrf_token }}'}
+      });
+      const d = await r.json();
+      if (d.ok) {
+        select.add(new Option(d.label, d.id, true, true));
+        modal.hide();
+      } else {
+        errBox.textContent = d.error || 'تعذّر الحفظ';
+        errBox.classList.remove('d-none');
+      }
+    } catch (e) {
+      errBox.textContent = 'خطأ في الاتصال، حاول مرة أخرى';
+      errBox.classList.remove('d-none');
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
+});
+</script>

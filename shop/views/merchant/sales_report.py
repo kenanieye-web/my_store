@@ -1,7 +1,7 @@
 from datetime import timedelta
 from django.shortcuts import render
 from shop.models import Order, OrderItem
-from django.db.models import Q, Sum
+from django.db.models import DecimalField, ExpressionWrapper, F, Q, Sum
 from django.utils import timezone
 
 from shop.views.merchant.staff_required import staff_required
@@ -30,18 +30,28 @@ def sales_report(request):
 
     all_orders = Order.objects.all()
     total_sales = completed_orders.aggregate(total=Sum('total_price'))['total'] or 0
+
+    # المبيعات المتوقعة: كل الطلبات غير الملغاة
+    active_sales = all_orders.exclude(
+        Q(status='canceled') | Q(status='ملغي') | Q(status='الملغية')
+    ).aggregate(total=Sum('total_price'))['total'] or 0
     
     top_selling_items = OrderItem.objects.filter(
         order__in=completed_orders
     ).values(
-        'product__name', 'price'
+        'product__id', 'product__name'
     ).annotate(
-        total_quantity=Sum('quantity')
+        total_quantity=Sum('quantity'),
+        total_revenue=Sum(ExpressionWrapper(
+            F('price') * F('quantity'),
+            output_field=DecimalField(max_digits=14, decimal_places=2),
+        )),
     ).order_by('-total_quantity')[:5]
 
     context = {
         'completed_orders': completed_orders,
         'total_sales': total_sales,
+        'active_sales': active_sales,
         'completed_count': completed_orders.count(),
         'total_orders_count': all_orders.count(),
         'top_selling_items': top_selling_items,

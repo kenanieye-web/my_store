@@ -25,6 +25,8 @@ from shop.views.merchant.category_list import merchant_category_list
 from shop.views.merchant.bulk_product_actions import bulk_product_actions
 from shop.views.merchant.export_product_requests import export_product_request_pdf, export_product_request_excel
 from django.urls import path, include
+from shop.views.merchant import pricing_settings
+from shop.views.merchant.category_quick_add import category_quick_add
 from shop.views.merchant.export_orders import (
     export_orders_excel, 
     export_orders_pdf, 
@@ -90,7 +92,8 @@ urlpatterns = [
     #path('merchant/loyalty/', loyalty_program, name='loyalty_program'),
     #path('merchant/banners/', banners_list, name='banners_list'),
     #path('merchant/affiliate/', affiliate_marketing, name='affiliate_marketing'),
-
+    path('merchant/pricing-settings/', pricing_settings, name='pricing_settings'),
+    path('merchant/categories/quick-add/', category_quick_add, name='merchant_category_quick_add'),
     # مسارات استيراد وتصدير المنتجات
     # الاسمان يشيران لنفس الدالة الجديدة (22 عموداً) ليعمل أي قالب يستخدم أحدهما
     path('merchant/products/download-template/', download_excel_template, name='download_excel_template'),

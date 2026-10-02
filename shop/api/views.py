@@ -8,7 +8,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from shop.models import Category, Order, PaymentMethod, Product, ShippingMethod
+from shop.models import Category, Order, PaymentMethod, PricingSettings, Product, ShippingMethod
 from shop.models.product_request import ProductRequestImage
 from shop.utils.shipping import calculate_shipping_cost
 
@@ -21,6 +21,15 @@ from .serializers import (
 )
 
 User = get_user_model()
+
+
+def get_user_tier(user):
+    """مستوى السعر للمستخدم: retail / wholesale / super_wholesale"""
+    if user is not None and user.is_authenticated:
+        profile = getattr(user, 'customer_profile', None)
+        if profile is not None:
+            return profile.get_price_tier()
+    return 'retail'
 
 
 class ProductPagination(PageNumberPagination):
@@ -42,8 +51,9 @@ class ProductListView(generics.ListAPIView):
     pagination_class = ProductPagination
 
     ORDERING = {
-        'price': 'price',
-        '-price': '-price',
+        # الترتيب بالتكلفة يعطي نفس ترتيب سعر البيع لأن النسبة ثابتة
+        'price': 'cost_price',
+        '-price': '-cost_price',
         'newest': '-created_at',
         'rating': '-rating',
     }
@@ -64,11 +74,14 @@ class ProductListView(generics.ListAPIView):
         if q:
             qs = qs.filter(Q(name__icontains=q) | Q(model__icontains=q) | Q(description__icontains=q))
 
-        for param, lookup in (('min_price', 'price__gte'), ('max_price', 'price__lte')):
+        # فلتر السعر: نحوّل سعر البيع المطلوب إلى تكلفة حسب نسبة مستوى العميل
+        margin = PricingSettings.get_solo().get_margin(get_user_tier(self.request.user))
+        factor = Decimal('1') + Decimal(margin) / Decimal('100')
+        for param, lookup in (('min_price', 'cost_price__gte'), ('max_price', 'cost_price__lte')):
             value = p.get(param)
             if value:
                 try:
-                    qs = qs.filter(**{lookup: Decimal(value)})
+                    qs = qs.filter(**{lookup: Decimal(value) / factor})
                 except InvalidOperation:
                     pass
 

@@ -7,7 +7,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="fw-bold text-dark m-0">تصنيفات المنتجات</h4>
-        <p class="text-muted small mt-1">إضافة وتنظيم أقسام وتصنيفات منتجات المتجر.</p>
+        <p class="text-muted small mt-1">إضافة وتنظيم أقسام وتصنيفات منتجات المتجر (بعدد مستويات غير محدود).</p>
     </div>
 </div>
 
@@ -33,20 +33,21 @@
                     <input type="text" name="name" class="form-control" placeholder="مثال: إلكترونيات، إكسسوارات..." required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold small">التصنيف الرئيسي (اختياري)</label>
+                    <label class="form-label fw-bold small">يتبع للتصنيف (اختياري)</label>
                     <select name="parent" class="form-select">
                         <option value="">-- تصنيف رئيسي (بدون أب) --</option>
-                        {% for cat in main_categories %}
-                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% for c, l, p in category_tree %}
+                            <option value="{{ c.id }}">{{ p }}</option>
                         {% endfor %}
                     </select>
+                    <div class="form-text">يمكنك اختيار أي تصنيف، رئيسي أو فرعي، ليكون أباً للتصنيف الجديد.</div>
                 </div>
                 <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">حفظ التصنيف</button>
             </form>
         </div>
     </div>
 
-    <!-- جدول عرض التصنيفات الحالية -->
+    <!-- جدول عرض التصنيفات الحالية (شجرة) -->
     <div class="col-lg-8">
         <div class="card p-4 shadow-sm border-0">
             <h5 class="fw-bold mb-3">قائمة التصنيفات المسجلة</h5>
@@ -56,16 +57,18 @@
                         <tr>
                             <th>#</th>
                             <th>اسم التصنيف</th>
-                            <th>التصنيف الرئيسي</th>
+                            <th>يتبع لـ</th>
                             <th>الرابط (Slug)</th>
                             <th>الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for cat in categories %}
+                        {% for cat, level, path in category_tree %}
                         <tr>
                             <td class="fw-bold text-muted">{{ forloop.counter }}</td>
-                            <td class="fw-bold text-dark">{{ cat.name }}</td>
+                            <td class="fw-bold text-dark" style="padding-right: {% widthratio level 1 22 %}px;">
+                                {% if level %}<span class="text-muted">└</span> {% endif %}{{ cat.name }}
+                            </td>
                             <td>
                                 {% if cat.parent %}
                                     <span class="badge bg-secondary">{{ cat.parent.name }}</span>
@@ -108,15 +111,16 @@
                                             <input type="text" name="name" value="{{ cat.name }}" required class="form-control">
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label fw-bold small">التصنيف الرئيسي (اختياري)</label>
+                                            <label class="form-label fw-bold small">يتبع للتصنيف (اختياري)</label>
                                             <select name="parent" class="form-select">
                                                 <option value="">-- تصنيف رئيسي (بدون أب) --</option>
-                                                {% for main_cat in main_categories %}
-                                                    {% if main_cat.id != cat.id %}
-                                                        <option value="{{ main_cat.id }}" {% if cat.parent_id == main_cat.id %}selected{% endif %}>{{ main_cat.name }}</option>
+                                                {% for c, l, p in category_tree %}
+                                                    {% if c.id != cat.id %}
+                                                        <option value="{{ c.id }}" {% if cat.parent_id == c.id %}selected{% endif %}>{{ p }}</option>
                                                     {% endif %}
                                                 {% endfor %}
                                             </select>
+                                            <div class="form-text">لا يمكن اختيار أحد فروع هذا التصنيف كأب له، وسيرفض النظام ذلك.</div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">

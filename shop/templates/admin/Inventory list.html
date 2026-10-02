@@ -71,7 +71,7 @@
                 <tr>
                     <th>المنتج</th>
                     <th>التصنيف</th>
-                    <th>السعر</th>
+                    <th>سعر التكلفة</th>
                     <th>المخزون الحالي</th>
                     <th>الحالة</th>
                     <th>تحديث الكمية</th>
@@ -82,7 +82,7 @@
                 <tr>
                     <td>{{ product.name }}</td>
                     <td>{{ product.category }}</td>
-                    <td>{{ product.price }} ر.ي</td>
+                    <td>${{ product.price }}</td>
                     <td class="fw-bold">{{ product.stock }}</td>
                     <td>
                         {% if product.stock <= 0 %}

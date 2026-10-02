@@ -1,39 +1,53 @@
+# shop/forms/product_form.py
 from django import forms
 from shop.models import Product, Category
 
+MAX_GALLERY_IMAGES = 5   # عدد الصور الإضافية (غير الرئيسية)
+
+
+class MultipleFileInput(forms.FileInput):
+    allow_multiple_selected = True
+
+    def value_from_datadict(self, data, files, name):
+        if hasattr(files, 'getlist'):
+            return files.getlist(name)
+        return files.get(name)
+
+
+class MultipleImageField(forms.ImageField):
+    widget = MultipleFileInput
+
+    def clean(self, data, initial=None):
+        if not data:
+            return []
+        if not isinstance(data, (list, tuple)):
+            data = [data]
+        return [super(MultipleImageField, self).clean(d, initial) for d in data]
+
 
 class ProductForm(forms.ModelForm):
-    # حقل مستقل للمجموعة الرئيسية
-    main_category = forms.ModelChoiceField(
-        queryset=Category.objects.filter(parent__isnull=True),
-        required=True,
-        label="المجموعة الرئيسية",
-        empty_label="- اختر المجموعة الرئيسية -",
-        widget=forms.Select(attrs={'class': 'form-select', 'id': 'main-category-select'})
-    )
-    
-    # حقل مستقل للمجموعة الفرعية
-    sub_category = forms.ModelChoiceField(
-        queryset=Category.objects.filter(parent__isnull=False),
+    gallery = MultipleImageField(
         required=False,
-        label="المجموعة الفرعية (اختياري)",
-        empty_label="- اختر المجموعة الفرعية (إن وُجدت) -",
-        widget=forms.Select(attrs={'class': 'form-select', 'id': 'sub-category-select'})
+        label="صور إضافية",
+        widget=MultipleFileInput(attrs={'class': 'form-control', 'multiple': True, 'accept': 'image/*'}),
     )
 
     class Meta:
         model = Product
         fields = [
-            'name', 'model', 'description', 'specifications', 'price', 'stock', 'image', 'is_available',
+            'name', 'model', 'brand', 'category', 'description', 'specifications',
+            'cost_price', 'stock', 'image', 'is_available',
             'length_cm', 'width_cm', 'height_cm', 'weight_kg',
             'units_per_carton', 'carton_length_cm', 'carton_width_cm', 'carton_height_cm', 'carton_weight_kg',
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'اسم المنتج'}),
             'model': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'موديل المنتج'}),
+            'brand': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'الماركة (اختياري) مثل: Dinks'}),
+            'category': forms.Select(attrs={'class': 'form-select', 'id': 'id_category'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'وصف المنتج'}),
             'specifications': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'المواصفات الفنية (كل سطر: الخاصية: القيمة)، مثال:\nاللون: أسود\nالطول: 1 متر'}),
-            'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'السعر'}),
+            'cost_price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'سعر التكلفة', 'step': '0.01'}),
             'stock': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'المخزون'}),
             'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'is_available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -50,25 +64,24 @@ class ProductForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # في حالة التعديل، جلب القيم الحالية وتعبئتها في الحقلين
-        if self.instance and self.instance.pk and self.instance.category:
-            if self.instance.category.parent:
-                self.fields['main_category'].initial = self.instance.category.parent
-                self.fields['sub_category'].initial = self.instance.category
-            else:
-                self.fields['main_category'].initial = self.instance.category
+        # قائمة التصنيفات شجرية بالمسار الكامل: الكترونيات › الأجهزة المنزلية › كاويات
+        self.fields['category'].empty_label = "- اختر التصنيف -"
+        self.fields['category'].choices = (
+            [('', '- اختر التصنيف -')] + [(c.pk, path) for c, _lvl, path in Category.tree()]
+        )
 
-    def save(self, commit=True):
-        product = super().save(commit=False)
-        sub_cat = self.cleaned_data.get('sub_category')
-        main_cat = self.cleaned_data.get('main_category')
-        
-        # إذا اختار المستخدم مجموعة فرعية، يتم اعتمادها كفئة للمنتج، وإلا يتم اعتماد الرئيسية
-        if sub_cat:
-            product.category = sub_cat
-        else:
-            product.category = main_cat
-            
-        if commit:
-            product.save()
-        return product
+    def clean_brand(self):
+        brand = (self.cleaned_data.get('brand') or '').strip()
+        return brand or None
+
+    def clean_cost_price(self):
+        cost_price = self.cleaned_data.get('cost_price')
+        if cost_price is not None and cost_price < 0:
+            raise forms.ValidationError("سعر التكلفة لا يمكن أن يكون سالباً")
+        return cost_price
+
+    def clean_gallery(self):
+        files = self.cleaned_data.get('gallery') or []
+        if len(files) > MAX_GALLERY_IMAGES:
+            raise forms.ValidationError(f"الحد الأقصى {MAX_GALLERY_IMAGES} صور إضافية.")
+        return files

@@ -1,5 +1,7 @@
 from django.contrib import admin
-from shop.models import Category, Product, ProductImage
+from decimal import Decimal
+from django.db.models import DecimalField, ExpressionWrapper, F, Value
+from shop.models import Category, PricingSettings, Product, ProductImage
 import openpyxl
 from django.http import HttpResponse
 from django.urls import path
@@ -16,17 +18,58 @@ from shop.admin.product_image_inline import ProductImageInline
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category', 'price', 'stock', 'is_available', 'created_at']
+    list_display = [
+        'name', 'category', 'cost_price',
+        'retail_price_col', 'wholesale_price_col', 'super_wholesale_price_col',
+        'stock', 'is_available', 'created_at',
+    ]
     list_filter = ['is_available', 'category', 'created_at']
-    list_editable = ['price', 'stock', 'is_available']
+    list_editable = ['cost_price', 'stock', 'is_available']
     search_fields = ['name', 'model', 'description', 'specifications']
     inlines = [ProductImageInline]
     actions = ['export_to_excel']
     change_list_template = "admin/product_changelist.html"
 
+    # ===== أعمدة الأسعار المحسوبة (تُحسب في قاعدة البيانات باستعلام واحد) =====
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        pricing = PricingSettings.get_solo()
+
+        def with_margin(margin):
+            factor = Value(
+                Decimal('1') + Decimal(margin) / Decimal('100'),
+                output_field=DecimalField(max_digits=10, decimal_places=4),
+            )
+            return ExpressionWrapper(
+                F('cost_price') * factor,
+                output_field=DecimalField(max_digits=14, decimal_places=2),
+            )
+
+        return qs.annotate(
+            retail_calc=with_margin(pricing.retail_margin_percent),
+            wholesale_calc=with_margin(pricing.wholesale_margin_percent),
+            super_wholesale_calc=with_margin(pricing.super_wholesale_margin_percent),
+        )
+
+    @staticmethod
+    def _fmt(value):
+        return '-' if value is None else f"{value:.2f}"
+
+    @admin.display(description='سعر التجزئة', ordering='retail_calc')
+    def retail_price_col(self, obj):
+        return self._fmt(getattr(obj, 'retail_calc', None))
+
+    @admin.display(description='سعر الجملة', ordering='wholesale_calc')
+    def wholesale_price_col(self, obj):
+        return self._fmt(getattr(obj, 'wholesale_calc', None))
+
+    @admin.display(description='سعر جملة الجملة', ordering='super_wholesale_calc')
+    def super_wholesale_price_col(self, obj):
+        return self._fmt(getattr(obj, 'super_wholesale_calc', None))
+
     EXCEL_HEADERS = [
         'ID (اتركه فارغ لمنتج جديد)', 'اسم المنتج', 'الموديل', 'التصنيف',
-        'الوصف', 'المواصفات الفنية', 'السعر', 'متاح للبيع (نعم/لا)', 'المخزون',
+        'الوصف', 'المواصفات الفنية', 'سعر التكلفة', 'متاح للبيع (نعم/لا)', 'المخزون',
         'رابط الصورة (اختياري)', 'صورة المنتج', 'صورة العلبة',
     ]
 
@@ -44,11 +87,11 @@ class ProductAdmin(admin.ModelAdmin):
                 p.category.name if p.category else '',
                 p.description or '',
                 p.specifications or '',
-                float(p.price),
+                float(p.cost_price),
                 'نعم' if p.is_available else 'لا',
                 p.stock,
                 '',
-                '',  # صورة المنتج - يُضاف يدويًا لأن التصدير لا يستخرج صورًا مضمّنة
+                '',  # صورة المنتج
                 '',  # صورة العلبة
             ])
 
@@ -63,24 +106,24 @@ class ProductAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-        # الروابط بالأسماء البسيطة والأسماء المركبة لضمان عدم حدوث أي خطأ في أي صفحة
-        path('import-excel/', self.import_excel, name='import-excel'),
-        path('import-excel/', self.import_excel, name='shop_product_import-excel'),
-        
-        path('download-template/', self.download_template, name='download-template'),
-        path('download-template/', self.download_template, name='shop_product_download-template'),
-        
-        path('import-from-url/', self.import_from_url, name='import-from-url'),
-        path('import-from-url/', self.import_from_url, name='shop_product_import-from-url'),
-    ]
+            path('import-excel/', self.import_excel, name='import-excel'),
+            path('import-excel/', self.import_excel, name='shop_product_import-excel'),
+            
+            path('download-template/', self.download_template, name='download-template'),
+            path('download-template/', self.download_template, name='shop_product_download-template'),
+            
+            path('import-from-url/', self.import_from_url, name='import-from-url'),
+            path('import-from-url/', self.import_from_url, name='shop_product_import-from-url'),
+        ]
         return custom_urls + urls
+
     def download_template(self, request):
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Template"
         ws.append(self.EXCEL_HEADERS)
         ws.append(['', 'مثال: لابتوب HP', 'HP-2024', 'إلكترونيات',
-                    'وصف المنتج هنا', 'المواصفات هنا', 1500, 'نعم', 10, '', '', ''])
+                    'وصف المنتج هنا', 'المواصفات هنا', 1000, 'نعم', 10, '', '', ''])
 
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -91,11 +134,14 @@ class ProductAdmin(admin.ModelAdmin):
 
     def import_excel(self, request):
         if request.method == "POST":
-            excel_file = request.FILES["excel_file"]
+            excel_file = request.FILES.get("excel_file")
+            if not excel_file:
+                self.message_user(request, "الرجاء رفع ملف إكسل صالح.", level='error')
+                return redirect("..")
+
             wb = openpyxl.load_workbook(excel_file)
             ws = wb.active
             
-            # التقاط وفك ملف الـ ZIP في الذاكرة
             zip_file = request.FILES.get("zip_file")
             images_dict = {}
             if zip_file:
@@ -108,35 +154,48 @@ class ProductAdmin(admin.ModelAdmin):
             errors = []
 
             for row_num, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+                # تخطي الصفوف الفارغة تماماً التي لا تحتوي على أي بيانات
+                if not any(row):
+                    continue
+
                 data = dict(zip(headers, row))
                 name = data.get('اسم المنتج')
                 category_name = data.get('التصنيف')
 
+                # تنظيف النصوص من الفراغات الزائدة إن وجدت
+                if name:
+                    name = str(name).strip()
+                if category_name:
+                    category_name = str(category_name).strip()
+
                 if not name:
+                    errors.append(f"الصف {row_num}: تم تجاهله لعدم وجود اسم للمنتج.")
                     continue
 
                 if not category_name:
-                    errors.append(f"الصف {row_num}: تم تجاهله (لا يوجد تصنيف)")
+                    errors.append(f"الصف {row_num}: تم تجاهله لعدم وجود تصنيف للمنتج ({name}).")
                     continue
 
                 category_obj, _ = Category.objects.get_or_create(name=category_name)
 
-                # 1. إنشاء أو تحديث المنتج أولاً للحصول على product_obj
+                # معالجة الآيدي إن وجد وفارغ
+                raw_id = data.get('ID (اتركه فارغ لمنتج جديد)')
+                product_id = int(raw_id) if raw_id and str(raw_id).isdigit() else None
+
                 product_obj, created = Product.objects.update_or_create(
-                    id=data.get('ID (اتركه فارغ لمنتج جديد)') or None,
+                    id=product_id,
                     defaults={
                         'name': name,
-                        'model': data.get('الموديل') or '',
+                        'model': str(data.get('الموديل') or '').strip(),
                         'category': category_obj,
-                        'description': data.get('الوصف') or '',
-                        'specifications': data.get('المواصفات الفنية') or '',
-                        'price': data.get('السعر') or 0,
-                        'is_available': str(data.get('متاح للبيع (نعم/لا)')).strip() in ['نعم', 'True', 'true', '1'],
+                        'description': str(data.get('الوصف') or '').strip(),
+                        'specifications': str(data.get('المواصفات الفنية') or '').strip(),
+                        'cost_price': data.get('سعر التكلفة') or data.get('السعر') or 0,  # «السعر» لتوافق الملفات القديمة
+                        'is_available': str(data.get('متاح للبيع (نعم/لا)')).strip() in ['نعم', 'True', 'true', '1', 'Yes', 'yes'],
                         'stock': data.get('المخزون') or 0,
                     }
                 )
 
-                # 2. ربط وحفظ الصور من ملف الـ ZIP مع دعم تلقائي للامتدادات
                 product_img_name = data.get('صورة المنتج')
                 package_img_name = data.get('صورة العلبة')
 
@@ -151,7 +210,6 @@ class ProductAdmin(admin.ModelAdmin):
                             return name_str + ext, images_dict[name_str + ext]
                     return None, None
 
-                # حفظ صورة المنتج الأساسية
                 found_name, img_bytes = find_image_content(product_img_name)
                 if found_name and img_bytes:
                     product_obj.image.save(
@@ -160,7 +218,6 @@ class ProductAdmin(admin.ModelAdmin):
                         save=True
                     )
 
-                # حفظ صورة العلبة (المعرض الإضافي)
                 found_pkg_name, pkg_bytes = find_image_content(package_img_name)
                 if found_pkg_name and pkg_bytes:
                     gallery_image = ProductImage(product=product_obj)
@@ -170,21 +227,23 @@ class ProductAdmin(admin.ModelAdmin):
                         save=True
                     )
 
-                # 3. الخيار البديل: رابط صورة خارجي (اختياري للتوافق)
                 image_url = data.get('رابط الصورة (اختياري)') or data.get('رابط الصورة')
                 if image_url:
                     try:
-                        img_response = requests.get(image_url, timeout=10)
+                        img_response = requests.get(str(image_url).strip(), timeout=10)
                         if img_response.status_code == 200:
-                            file_name = os.path.basename(urlparse(image_url).path) or f"product_{product_obj.id}.jpg"
+                            file_name = os.path.basename(urlparse(str(image_url).strip()).path) or f"product_{product_obj.id}.jpg"
                             product_obj.image.save(file_name, ContentFile(img_response.content), save=True)
                     except Exception as e:
-                        errors.append(f"الصف {row_num}: فشل تحميل الصورة من الرابط ({e})")
+                        errors.append(f"الصف {row_num}: فشل تحميل الصورة من الرابط للمنتج {name} ({e})")
 
-            msg = "تم استيراد المنتجات بنجاح"
+            msg = "تم استيراد المنتجات بنجاح."
             if errors:
-                msg += " — لكن: " + " | ".join(errors)
-            self.message_user(request, msg)
+                msg += " ملاحظات وتنبيهات: " + " | ".join(errors)
+                self.message_user(request, msg, level='warning')
+            else:
+                self.message_user(request, msg, level='success')
+                
             return redirect("..")
 
         return render(request, "admin/excel_import.html")
@@ -200,15 +259,12 @@ class ProductAdmin(admin.ModelAdmin):
                     if response.status_code == 200:
                         soup = BeautifulSoup(response.text, 'html.parser')
                         
-                        # سحب الاسم
                         name_tag = soup.find('meta', property='og:title')
                         product_name = name_tag['content'] if name_tag else (soup.h1.text.strip() if soup.h1 else "منتج مستورد")
                         
-                        # سحب الصورة
                         image_tag = soup.find('meta', property='og:image')
                         image_url = image_tag['content'] if image_tag else ''
                         
-                        # سحب السعر
                         price = 0
                         price_tag = soup.find('meta', property='product:price:amount') or soup.find(class_=['price', 'product-price', 'current-price'])
                         if price_tag:
@@ -222,7 +278,7 @@ class ProductAdmin(admin.ModelAdmin):
                         
                         product_obj = Product.objects.create(
                             name=product_name,
-                            price=price,
+                            cost_price=price,
                             category=default_category,
                             is_available=True,
                             stock=10,

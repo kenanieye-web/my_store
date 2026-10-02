@@ -37,13 +37,14 @@ COLUMNS = [
     ("category", "التصنيف", 20),
     ("description", "الوصف", 40),
     ("specifications", "المواصفات الفنية", 40),
-    ("price", "السعر", 10),
+    ("cost_price", "سعر التكلفة", 12),
     ("is_available", "متاح للبيع (نعم/لا)", 16),
     ("stock", "المخزون", 10),
     ("image_url", "رابط الصورة", 24),
     ("image", "صورة المنتج", 18),
     ("box_image", "صورة العلبة", 18),
     # ----- أعمدة جديدة -----
+    ("brand", "الماركة", 16),
     ("subcategory", "المجموعة الفرعية", 20),
     ("length_cm", "الطول (سم)", 12),
     ("width_cm", "العرض (سم)", 12),
@@ -84,6 +85,8 @@ def _header_key(header):
     h = _norm(header)
     if h.startswith("id"):          # يقبل: ID / ID منتج جديد / ID (منتج جديد)
         return "id"
+    if h in ("السعر", "price"):     # توافق مع ملفات Excel القديمة
+        return "cost_price"
     return KEY_BY_HEADER.get(h)
 
 
@@ -317,16 +320,16 @@ def _import_row(row, files, pics):
     # الحقول النصية (في التحديث لا تُمسح القيمة القديمة إذا كانت الخلية فارغة)
     if name:
         product.name = name
-    for key in ("model", "description", "specifications"):
+    for key in ("model", "brand", "description", "specifications"):
         v = _s(row, key)
         if v:
             setattr(product, key, v)
 
-    price = _dec(row, "price")
-    if price is not None:
-        product.price = price
+    cost_price = _dec(row, "cost_price")
+    if cost_price is not None:
+        product.cost_price = cost_price
     elif is_new:
-        raise ValueError("السعر مطلوب")
+        raise ValueError("سعر التكلفة مطلوب")
 
     main_name, sub_name = _s(row, "category"), _s(row, "subcategory")
     if main_name or sub_name:
@@ -473,7 +476,7 @@ def download_excel_template(request):
     help_ws.column_dimensions["A"].width = 110
     for i, line in enumerate([
         "تعليمات تعبئة الملف",
-        "• الأعمدة المطلوبة للمنتج الجديد: اسم المنتج، التصنيف، السعر. والباقي اختياري.",
+        "• الأعمدة المطلوبة للمنتج الجديد: اسم المنتج، التصنيف، سعر التكلفة. والباقي اختياري. أسعار البيع (تجزئة/جملة/جملة الجملة) تُحسب تلقائياً من نسب التسعير.",
         "• عمود ID: اتركه فارغاً لمنتج جديد، أو اكتب رقم منتج موجود لتحديثه (الخلايا الفارغة لا تمسح القيم القديمة).",
         "• التصنيف والمجموعة الفرعية: اكتب الاسم مطابقاً تماماً لما في المتجر. المجموعة الفرعية اختيارية.",
         "• متاح للبيع: نعم أو لا (الافتراضي نعم).",
@@ -481,6 +484,7 @@ def download_excel_template(request):
         "• رابط الصورة: يُستخدم فقط إذا لم توجد صورة المنتج في ملف zip.",
         "• الأبعاد بالسنتيمتر، والوزن بالكيلوغرام (مثال: 0.050 = 50 غرام). الفارغ يعني 0.",
         "• عدد القطع في الكرتون: الافتراضي 1.",
+        "• الماركة: اختيارية، اكتبها كما تريدها أن تظهر في فلتر التطبيق (مثال: Dinks).",
         "• لا تغيّر عناوين الأعمدة، ويمكن تغيير ترتيبها.",
         "• أي صف فيه خطأ يُتجاوز مع رسالة توضح رقم السطر، ويُستورد باقي الصفوف.",
     ], start=1):

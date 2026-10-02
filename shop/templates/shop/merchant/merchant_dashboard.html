@@ -25,7 +25,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <span class="text-muted d-block small fw-bold mb-1">إجمالي المبيعات</span>
-                    <h3 class="fw-bold text-dark m-0">{{ total_sales|default:"0.00" }} <span class="fs-6 text-muted">ر.ي</span></h3>
+                    <h3 class="fw-bold text-dark m-0">{{ total_sales|default:"0.00" }} <span class="fs-6 text-muted">$</span></h3>
                 </div>
                 <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
                     <i class="bx bx-dollar-circle fs-3"></i>
@@ -61,7 +61,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <span class="text-muted d-block small fw-bold mb-1">متوسط قيمة الطلب</span>
-                    <h3 class="fw-bold text-dark m-0">{{ average_order_value|default:"0.00" }} <span class="fs-6 text-muted">ر.ي</span></h3>
+                    <h3 class="fw-bold text-dark m-0">{{ average_order_value|default:"0.00" }} <span class="fs-6 text-muted">$</span></h3>
                 </div>
                 <div class="bg-warning bg-opacity-10 p-3 rounded-circle text-warning">
                     <i class="bx bx-line-chart fs-3"></i>
@@ -177,8 +177,8 @@
                     <tr>
                         <td class="fw-bold text-primary">#{{ order.id }}</td>
                         <td>
-                            {% if order.customer_name %}
-                                {{ order.customer_name }}
+                            {% if order.full_name %}
+                                {{ order.full_name }}
                             {% elif order.user %}
                                 {{ order.user.username }}
                             {% else %}
@@ -186,13 +186,13 @@
                             {% endif %}
                         </td>
                         <td>{{ order.city|default:"عدن" }}</td>
-                        <td>{{ order.total_price }} ر.ي</td>
+                        <td>${{ order.total_price }}</td>
                         <td>
                             <span class="badge bg-warning text-dark px-2 py-1">{{ order.status|default:"قيد المعالجة" }}</span>
                         </td>
                         <td class="text-muted small">{{ order.created_at|date:"Y-m-d H:i" }}</td>
                         <td>
-                            <a href="#" class="btn btn-sm btn-light text-primary border"><i class="bx bx-show"></i> التفاصيل</a>
+                            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-light text-primary border"><i class="bx bx-show"></i> التفاصيل</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -247,7 +247,7 @@
         data: {
             labels: ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'],
             datasets: [{
-                label: 'المبيعات (ر.ي)',
+                label: 'المبيعات ($)',
                 data: [15000, 22000, 18000, 32000, 28000, 41000, 48000],
                 borderColor: '#0d6efd',
                 backgroundColor: 'rgba(13, 110, 253, 0.05)',

@@ -78,7 +78,10 @@
                             <th>الصورة</th>
                             <th>اسم المنتج</th>
                             <th>التصنيف</th>
-                            <th>السعر</th>
+                            <th>التكلفة</th>
+                            <th>تجزئة</th>
+                            <th>جملة</th>
+                            <th>جملة الجملة</th>
                             <th>الحالة</th>
                             <th>التحكم</th>
                         </tr>
@@ -98,7 +101,10 @@
                             </td>
                             <td class="fw-bold">{{ product.name }}</td>
                             <td>{{ product.category.name|default:"بدون تصنيف" }}</td>
-                            <td>${{ product.price }}</td>
+                            <td>${{ product.cost_price }}</td>
+                            <td>${{ product.retail_p }}</td>
+                            <td>${{ product.wholesale_p }}</td>
+                            <td>${{ product.super_p }}</td>
                             <td>
                                 {% if product.is_available %}
                                     <span class="badge bg-success">متوفر</span>
@@ -119,7 +125,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" class="text-center py-3 text-muted">لا توجد منتجات مسجلة حالياً.</td>
+                            <td colspan="10" class="text-center py-3 text-muted">لا توجد منتجات مسجلة حالياً.</td>
                         </tr>
                         {% endfor %}
                     </tbody>

@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 import pandas as pd
 
-from shop.models import Product
+from shop.models import PricingSettings, Product
 from shop.views.merchant.staff_required import staff_required
 
 
@@ -29,17 +29,32 @@ def bulk_product_actions(request):
         return redirect('merchant_product_list')
 
     elif action == 'export':
-        data = list(products.values(
-            'id', 'name', 'model', 'category__name', 'price', 'stock',
-            'is_available', 'description',
-        ))
+        data = []
+        pricing = PricingSettings.get_solo()
+        for p in products.select_related('category'):
+            data.append({
+                'id': p.id,
+                'name': p.name,
+                'model': p.model,
+                'category__name': p.category.name if p.category else '',
+                'cost_price': p.cost_price,
+                'retail_price': p.get_price('retail', pricing),
+                'wholesale_price': p.get_price('wholesale', pricing),
+                'super_wholesale_price': p.get_price('super_wholesale', pricing),
+                'stock': p.stock,
+                'is_available': p.is_available,
+                'description': p.description,
+            })
         df = pd.DataFrame(data)
         df.rename(columns={
             'id': 'المعرف',
             'name': 'اسم المنتج',
             'model': 'الموديل',
             'category__name': 'التصنيف',
-            'price': 'السعر',
+            'cost_price': 'سعر التكلفة',
+            'retail_price': 'سعر التجزئة',
+            'wholesale_price': 'سعر الجملة',
+            'super_wholesale_price': 'سعر جملة الجملة',
             'stock': 'المخزون',
             'is_available': 'متاح للبيع',
             'description': 'الوصف',

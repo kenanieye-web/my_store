@@ -1,6 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% block content %}
 <h1>استيراد منتجات من Excel</h1>
+<p>عمود السعر في الملف يُعتبر «سعر التكلفة»، وتُحسب أسعار التجزئة والجملة وجملة الجملة تلقائياً من نسب الربح في الإعدادات.</p>
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="file" name="excel_file" accept=".xlsx" required>

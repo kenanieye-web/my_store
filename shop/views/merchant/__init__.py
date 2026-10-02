@@ -21,3 +21,4 @@ from .add_staff import add_staff
 from .edit_staff_permissions import edit_staff_permissions
 from .bulk_product_actions import bulk_product_actions
 from .import_excel import import_excel, download_excel_template
+from .pricing import pricing_settings

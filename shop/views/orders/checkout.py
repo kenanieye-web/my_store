@@ -15,7 +15,11 @@ def checkout(request):
         messages.warning(request, "سلة التسوق فارغة!")
         return redirect('product_list')
 
-    total_price = sum((item.get_total_price() for item in cart.items.all()), 0)
+    # حساب الإجمالي بناءً على سعر المستخدم الفعلي (تجزئة، جملة، جملة جملة)
+    total_price = sum(
+        (item.product.get_price_for_user(request.user) * item.quantity for item in cart.items.all()), 
+        0
+    )
 
     # جلب بيانات العميل المسجّل مسبقاً لتعبئتها تلقائياً (تبقى قابلة للتعديل)
     initial_data = {'full_name': '', 'phone': '', 'address': '', 'city': ''}
@@ -53,11 +57,12 @@ def checkout(request):
             total_price=total_price
         )
 
+        # حفظ السعر الخاص بالعميل (تجزئة/جملة/جملة جملة) في تفاصيل الطلب
         order_items = [
             OrderItem(
                 order=order,
                 product=item.product,
-                price=item.product.price,
+                price=item.product.get_price_for_user(request.user),
                 quantity=item.quantity
             )
             for item in cart.items.all()

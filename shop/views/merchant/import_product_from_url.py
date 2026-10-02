@@ -57,12 +57,12 @@ def import_product_from_url(request):
             # 4. حفظ المنتج في قاعدة البيانات برمجياً وبشكل مفعل مباشرة
             product = Product.objects.create(
                 name=title,
-                price=price,
+                cost_price=price,
                 category=default_category,
                 is_available=True, # مفعل وجاهز للظهور في المتجر فوراً
             )
             
-            messages.success(request, f"تم سحب وحفظ المنتج ({title}) بالسعر {price} بنجاح تلقائياً!")
+            messages.success(request, f"تم سحب وحفظ المنتج ({title}) بسعر تكلفة {price} بنجاح تلقائياً!")
             return redirect('merchant_product_list')
 
         except Exception as e:

@@ -1,6 +1,8 @@
+from decimal import Decimal
+
 from django.shortcuts import render
 from shop.models import Product, Order, Customer
-from django.db.models import Q
+from django.db.models import Q, Sum
 
 from shop.views.merchant.staff_required import staff_required
 
@@ -19,6 +21,18 @@ def merchant_dashboard(request):
 
     recent_orders = Order.objects.all().order_by('-created_at')[:5]
 
+    # المؤشرات المالية: تُحسب من الطلبات غير الملغاة
+    active_orders = Order.objects.exclude(
+        Q(status='canceled') | Q(status='ملغي') | Q(status='الملغية')
+    )
+    active_count = active_orders.count()
+    total = active_orders.aggregate(total=Sum('total_price'))['total'] or 0
+    total_sales = Decimal(str(total)).quantize(Decimal('0.01'))
+    average_order_value = (
+        (total_sales / active_count).quantize(Decimal('0.01'))
+        if active_count else Decimal('0.00')
+    )
+
     context = {
         'products_count': products_count,
         'customers_count': customers_count,
@@ -28,5 +42,10 @@ def merchant_dashboard(request):
         'delivered_orders_count': delivered_orders_count,
         'canceled_orders_count': canceled_orders_count,
         'recent_orders': recent_orders,
+        # المتغيرات التي يقرأها قالب merchant_dashboard.html
+        'total_sales': total_sales,
+        'total_orders': total_orders_count,
+        'average_order_value': average_order_value,
+        'total_customers': customers_count,
     }
     return render(request, 'shop/merchant/merchant_dashboard.html', context)

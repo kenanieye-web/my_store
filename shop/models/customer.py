@@ -6,6 +6,7 @@ class Customer(django.db.models.Model):
     CUSTOMER_TYPE_CHOICES = (
         ('regular', 'عادي'),
         ('wholesale', 'جملة'),
+        ('super_wholesale', 'جملة الجملة'),
         ('vip', 'مميز'),
     )
 
@@ -25,6 +26,12 @@ class Customer(django.db.models.Model):
         verbose_name="تصنيف العميل"
     )
     created_at = django.db.models.DateTimeField(auto_now_add=True, verbose_name="تاريخ الانضمام")
+
+    def get_price_tier(self):
+        """مستوى السعر: super_wholesale / wholesale / retail (العادي والمميز = تجزئة)"""
+        if self.customer_type in ('wholesale', 'super_wholesale'):
+            return self.customer_type
+        return 'retail'
 
     class Meta:
         verbose_name = "عميل"

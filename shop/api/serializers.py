@@ -7,7 +7,7 @@ from rest_framework import serializers
 
 from shop.models import (
     Category, Coupon, Customer, Order, OrderItem, PaymentMethod,
-    Product, ProductImage, ShippingMethod,
+    PricingSettings, Product, ProductImage, ShippingMethod,
 )
 from shop.models.product_request import ProductRequest, ProductRequestImage
 from shop.utils.shipping import calculate_shipping_cost
@@ -44,15 +44,26 @@ class CategoryMiniSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'slug']
 
 
+class CategoryChildSerializer(serializers.ModelSerializer):
+    """فئة فرعية مع صورتها (تُستخدم داخل CategorySerializer فقط)"""
+
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'slug', 'image']
+
+
 class CategorySerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
-        fields = ['id', 'name', 'slug', 'children']
+        fields = ['id', 'name', 'slug', 'image', 'children']
 
     def get_children(self, obj):
-        return CategoryMiniSerializer(obj.children.all(), many=True).data
+        # تمرير context ليصل رابط الصورة كاملاً (https://...) لا نسبياً
+        return CategoryChildSerializer(
+            obj.children.all(), many=True, context=self.context
+        ).data
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -64,11 +75,23 @@ class ProductImageSerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     category = CategoryMiniSerializer(read_only=True)
     in_stock = serializers.BooleanField(source='is_available', read_only=True)
+    # السعر = التكلفة + نسبة الربح حسب مستوى العميل (تجزئة للزائر)
+    price = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = ['id', 'name', 'price', 'image', 'category',
-                  'rating', 'reviews_count', 'in_stock']
+                  'rating', 'reviews_count', 'in_stock',
+                  'brand', 'created_at']
+
+    def get_price(self, obj):
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        pricing = self.context.get('_pricing')
+        if pricing is None:
+            pricing = PricingSettings.get_solo()
+            self.context['_pricing'] = pricing  # استعلام واحد لكل طلب
+        return str(obj.get_price_for_user(user, pricing))
 
 
 class ProductDetailSerializer(ProductListSerializer):
@@ -208,7 +231,12 @@ class OrderCreateSerializer(serializers.Serializer):
     def create(self, data):
         user = self.context['request'].user
         items = data['items']
-        subtotal = sum((i['product'].price * i['quantity'] for i in items), Decimal('0'))
+        # سعر كل قطعة حسب مستوى العميل (تجزئة / جملة / جملة الجملة)
+        pricing = PricingSettings.get_solo()
+        unit_prices = [i['product'].get_price_for_user(user, pricing) for i in items]
+        subtotal = sum(
+            (p * i['quantity'] for p, i in zip(unit_prices, items)), Decimal('0')
+        )
         coupon = data['coupon']
         goods_total = apply_discount(coupon, subtotal) if coupon else subtotal
 
@@ -231,8 +259,8 @@ class OrderCreateSerializer(serializers.Serializer):
         )
         OrderItem.objects.bulk_create([
             OrderItem(order=order, product=i['product'],
-                      price=i['product'].price, quantity=i['quantity'])
-            for i in items
+                      price=p, quantity=i['quantity'])
+            for p, i in zip(unit_prices, items)
         ])
         return order
 
@@ -313,6 +341,22 @@ class ProductRequestSerializer(serializers.ModelSerializer):
             'status', 'created_at', 'images',
         ]
         read_only_fields = ['id', 'status', 'created_at', 'images']
+        # الاسم والهاتف يؤخذان من حساب العميل إن لم يرسلهما التطبيق
+        extra_kwargs = {
+            'full_name': {'required': False, 'allow_blank': True},
+            'phone': {'required': False, 'allow_blank': True},
+        }
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if user is not None and user.is_authenticated:
+            if not validated_data.get('full_name'):
+                validated_data['full_name'] = user.first_name or user.username
+            if not validated_data.get('phone'):
+                profile = getattr(user, 'customer_profile', None)
+                validated_data['phone'] = profile.phone if profile else ''
+        return super().create(validated_data)
 
     def validate_quantity(self, value):
         if value < 1:

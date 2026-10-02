@@ -18,7 +18,6 @@
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
 
-                        <!-- المعلومات الأساسية -->
                         <div class="mb-3">
                             <label class="form-label fw-bold">{{ form.name.label }}</label>
                             {{ form.name }}
@@ -31,17 +30,22 @@
                             {% if form.model.errors %}<div class="text-danger small mt-1">{{ form.model.errors }}</div>{% endif %}
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">{{ form.main_category.label }}</label>
-                                {{ form.main_category }}
-                                {% if form.main_category.errors %}<div class="text-danger small mt-1">{{ form.main_category.errors }}</div>{% endif %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ form.brand.label }}</label>
+                            {{ form.brand }}
+                            {% if form.brand.errors %}<div class="text-danger small mt-1">{{ form.brand.errors }}</div>{% endif %}
+                        </div>
+
+                        <!-- التصنيف (بأي عمق) + زر إضافة تصنيف -->
+                        <div class="mb-3">
+                            <label for="id_category" class="form-label fw-bold">{{ form.category.label }}</label>
+                            <div class="input-group">
+                                {{ form.category }}
+                                <button type="button" class="btn btn-outline-success" id="btnAddCategory" title="إضافة تصنيف جديد">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">{{ form.sub_category.label }}</label>
-                                {{ form.sub_category }}
-                                {% if form.sub_category.errors %}<div class="text-danger small mt-1">{{ form.sub_category.errors }}</div>{% endif %}
-                            </div>
+                            {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors }}</div>{% endif %}
                         </div>
 
                         <div class="mb-3">
@@ -58,9 +62,10 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">{{ form.price.label }}</label>
-                                {{ form.price }}
-                                {% if form.price.errors %}<div class="text-danger small mt-1">{{ form.price.errors }}</div>{% endif %}
+                                <label class="form-label fw-bold">{{ form.cost_price.label }}</label>
+                                {{ form.cost_price }}
+                                {% if form.cost_price.errors %}<div class="text-danger small mt-1">{{ form.cost_price.errors }}</div>{% endif %}
+                                <div class="form-text">تجزئة: {{ product.price }} | جملة: {{ product.wholesale_price }} | جملة الجملة: {{ product.super_wholesale_price }}</div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">{{ form.stock.label }}</label>
@@ -69,6 +74,7 @@
                             </div>
                         </div>
 
+                        <!-- الصورة الرئيسية -->
                         <div class="mb-3">
                             <label class="form-label fw-bold">{{ form.image.label }}</label>
                             {% if product.image %}
@@ -80,12 +86,31 @@
                             {% if form.image.errors %}<div class="text-danger small mt-1">{{ form.image.errors }}</div>{% endif %}
                         </div>
 
-                        <div class="form-check mb-4">
-                            {{ form.is_available }}
-                            <label class="form-check-label fw-bold">{{ form.is_available.label }}</label>
+                        <!-- الصور الإضافية: الحالية + إضافة جديدة -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">الصور الإضافية (حتى {{ max_gallery }}):</label>
+                            {% if gallery %}
+                                <div class="d-flex flex-wrap gap-3 mb-2">
+                                    {% for img in gallery %}
+                                        <label class="text-center small" style="cursor:pointer;">
+                                            <img src="{{ img.image.url }}" style="height:80px;" class="rounded border d-block mb-1">
+                                            <input type="checkbox" name="delete_images" value="{{ img.pk }}" class="form-check-input">
+                                            حذف
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {{ form.gallery }}
+                            {% if form.gallery.errors %}<div class="text-danger small mt-1">{{ form.gallery.errors }}</div>{% endif %}
+                            <div id="galleryPreview" class="d-flex flex-wrap gap-2 mt-2"></div>
                         </div>
 
-                        <!-- صندوق: أبعاد العلبة الفردية (لحساب شحن القطعة الواحدة) -->
+                        <div class="form-check mb-4">
+                            {{ form.is_available }}
+                            <label class="form-check-label fw-bold" for="{{ form.is_available.id_for_label }}">{{ form.is_available.label }}</label>
+                        </div>
+
+                        <!-- صندوق: أبعاد العلبة الفردية -->
                         <div class="card border-primary-subtle mb-4">
                             <div class="card-header bg-primary bg-opacity-10 fw-bold text-primary">
                                 <i class="fa-solid fa-box me-2"></i> أبعاد العلبة الفردية (لحساب الشحن)
@@ -117,7 +142,7 @@
                             </div>
                         </div>
 
-                        <!-- صندوق: بيانات الكرتون الرئيسي (Master Carton) -->
+                        <!-- صندوق: بيانات الكرتون الرئيسي -->
                         <div class="card border-success-subtle mb-4">
                             <div class="card-header bg-success bg-opacity-10 fw-bold text-success">
                                 <i class="fa-solid fa-boxes-stacked me-2"></i> بيانات الكرتون (لحساب شحن أدق بالجملة)
@@ -164,4 +189,22 @@
         </div>
     </div>
 </div>
+
+{% include 'shop/merchant/_category_quick_add.html' %}
+
+<script>
+document.getElementById('{{ form.gallery.id_for_label }}').addEventListener('change', function (e) {
+    var max = {{ max_gallery }};
+    var files = Array.from(e.target.files);
+    if (files.length > max) { alert('الحد الأقصى ' + max + ' صور إضافية'); e.target.value = ''; return; }
+    var box = document.getElementById('galleryPreview');
+    box.innerHTML = '';
+    files.forEach(function (f) {
+        var img = document.createElement('img');
+        img.src = URL.createObjectURL(f);
+        img.style.cssText = 'height:80px;border-radius:6px;border:1px solid #ddd';
+        box.appendChild(img);
+    });
+});
+</script>
 {% endblock %}

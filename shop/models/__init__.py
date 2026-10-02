@@ -1,6 +1,7 @@
 from .custom_user import CustomUser
 from .category import Category
 from .customer import Customer
+from .pricing_settings import PricingSettings
 from .product import Product
 from .product_image import ProductImage
 from .cart import Cart

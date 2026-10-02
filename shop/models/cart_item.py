@@ -23,4 +23,9 @@ class CartItem(django.db.models.Model):
 
     def get_total_price(self):
         """حساب السعر الإجمالي للعنصر بناءً على الكمية"""
-        return self.product.price * self.quantity
+        return self.get_unit_price() * self.quantity
+
+    def get_unit_price(self):
+        """سعر القطعة حسب مستوى العميل صاحب السلة"""
+        user = getattr(self.cart, 'user', None)
+        return self.product.get_price_for_user(user)
