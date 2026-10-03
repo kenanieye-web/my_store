@@ -35,7 +35,7 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = [
-            'name', 'model', 'brand', 'category', 'description', 'specifications',
+            'name', 'model', 'brand', 'supplier_store_number', 'category', 'description', 'specifications',
             'cost_price', 'stock', 'image', 'is_available',
             'length_cm', 'width_cm', 'height_cm', 'weight_kg',
             'units_per_carton', 'carton_length_cm', 'carton_width_cm', 'carton_height_cm', 'carton_weight_kg',
@@ -44,6 +44,7 @@ class ProductForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'اسم المنتج'}),
             'model': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'موديل المنتج'}),
             'brand': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'الماركة (اختياري) مثل: Dinks'}),
+            'supplier_store_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'رقم متجر المورد (اختياري - يظهر لك فقط)'}),
             'category': forms.Select(attrs={'class': 'form-select', 'id': 'id_category'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'وصف المنتج'}),
             'specifications': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'المواصفات الفنية (كل سطر: الخاصية: القيمة)، مثال:\nاللون: أسود\nالطول: 1 متر'}),
@@ -73,6 +74,9 @@ class ProductForm(forms.ModelForm):
     def clean_brand(self):
         brand = (self.cleaned_data.get('brand') or '').strip()
         return brand or None
+
+    def clean_supplier_store_number(self):
+        return (self.cleaned_data.get('supplier_store_number') or '').strip()
 
     def clean_cost_price(self):
         cost_price = self.cleaned_data.get('cost_price')

@@ -63,7 +63,8 @@ def checkout(request):
                 order=order,
                 product=item.product,
                 price=item.product.get_price_for_user(request.user),
-                quantity=item.quantity
+                quantity=item.quantity,
+                supplier_store_number=item.product.supplier_store_number
             )
             for item in cart.items.all()
         ]

@@ -259,7 +259,8 @@ class OrderCreateSerializer(serializers.Serializer):
         )
         OrderItem.objects.bulk_create([
             OrderItem(order=order, product=i['product'],
-                      price=p, quantity=i['quantity'])
+                      price=p, quantity=i['quantity'],
+                      supplier_store_number=i['product'].supplier_store_number)
             for p, i in zip(unit_prices, items)
         ])
         return order

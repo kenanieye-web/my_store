@@ -6,6 +6,12 @@ class Product(django.db.models.Model):
     name = django.db.models.CharField(max_length=200, verbose_name="اسم المنتج")
     model = django.db.models.CharField(max_length=100, blank=True, null=True, verbose_name="الموديل")
     brand = django.db.models.CharField(max_length=100, blank=True, null=True, verbose_name="الماركة")
+    # رقم متجر المورد (داخلي للتاجر فقط - لا يُعرض للعملاء ولا في الـ API)
+    supplier_store_number = django.db.models.CharField(
+        max_length=100, blank=True, default="",
+        verbose_name="رقم متجر المورد",
+        help_text="اختياري - يظهر لك فقط في تفاصيل الطلب والطباعة ولا يراه العميل"
+    )
     category = django.db.models.ForeignKey(
         Category, 
         on_delete=django.db.models.CASCADE, 

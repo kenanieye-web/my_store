@@ -25,7 +25,7 @@ class ProductAdmin(admin.ModelAdmin):
     ]
     list_filter = ['is_available', 'category', 'created_at']
     list_editable = ['cost_price', 'stock', 'is_available']
-    search_fields = ['name', 'model', 'description', 'specifications']
+    search_fields = ['name', 'model', 'description', 'specifications', 'supplier_store_number']
     inlines = [ProductImageInline]
     actions = ['export_to_excel']
     change_list_template = "admin/product_changelist.html"
@@ -71,6 +71,7 @@ class ProductAdmin(admin.ModelAdmin):
         'ID (اتركه فارغ لمنتج جديد)', 'اسم المنتج', 'الموديل', 'التصنيف',
         'الوصف', 'المواصفات الفنية', 'سعر التكلفة', 'متاح للبيع (نعم/لا)', 'المخزون',
         'رابط الصورة (اختياري)', 'صورة المنتج', 'صورة العلبة',
+        'رقم متجر المورد',
     ]
 
     def export_to_excel(self, request, queryset):
@@ -93,6 +94,7 @@ class ProductAdmin(admin.ModelAdmin):
                 '',
                 '',  # صورة المنتج
                 '',  # صورة العلبة
+                p.supplier_store_number or '',
             ])
 
         response = HttpResponse(
@@ -123,7 +125,7 @@ class ProductAdmin(admin.ModelAdmin):
         ws.title = "Template"
         ws.append(self.EXCEL_HEADERS)
         ws.append(['', 'مثال: لابتوب HP', 'HP-2024', 'إلكترونيات',
-                    'وصف المنتج هنا', 'المواصفات هنا', 1000, 'نعم', 10, '', '', ''])
+                    'وصف المنتج هنا', 'المواصفات هنا', 1000, 'نعم', 10, '', '', '', ''])
 
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -182,18 +184,23 @@ class ProductAdmin(admin.ModelAdmin):
                 raw_id = data.get('ID (اتركه فارغ لمنتج جديد)')
                 product_id = int(raw_id) if raw_id and str(raw_id).isdigit() else None
 
+                defaults = {
+                    'name': name,
+                    'model': str(data.get('الموديل') or '').strip(),
+                    'category': category_obj,
+                    'description': str(data.get('الوصف') or '').strip(),
+                    'specifications': str(data.get('المواصفات الفنية') or '').strip(),
+                    'cost_price': data.get('سعر التكلفة') or data.get('السعر') or 0,  # «السعر» لتوافق الملفات القديمة
+                    'is_available': str(data.get('متاح للبيع (نعم/لا)')).strip() in ['نعم', 'True', 'true', '1', 'Yes', 'yes'],
+                    'stock': data.get('المخزون') or 0,
+                }
+                # رقم المورد: يُحدَّث فقط إذا كان العمود موجوداً في الملف حتى لا تُمسح القيم القديمة
+                if 'رقم متجر المورد' in headers:
+                    defaults['supplier_store_number'] = str(data.get('رقم متجر المورد') or '').strip()
+
                 product_obj, created = Product.objects.update_or_create(
                     id=product_id,
-                    defaults={
-                        'name': name,
-                        'model': str(data.get('الموديل') or '').strip(),
-                        'category': category_obj,
-                        'description': str(data.get('الوصف') or '').strip(),
-                        'specifications': str(data.get('المواصفات الفنية') or '').strip(),
-                        'cost_price': data.get('سعر التكلفة') or data.get('السعر') or 0,  # «السعر» لتوافق الملفات القديمة
-                        'is_available': str(data.get('متاح للبيع (نعم/لا)')).strip() in ['نعم', 'True', 'true', '1', 'Yes', 'yes'],
-                        'stock': data.get('المخزون') or 0,
-                    }
+                    defaults=defaults,
                 )
 
                 product_img_name = data.get('صورة المنتج')

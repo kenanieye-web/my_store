@@ -21,5 +21,4 @@ def add_product(request):
             return redirect('merchant_product_list')
     else:
         form = ProductForm()
-    return render(request, 'shop/merchant/add_product.html', {'form': form})
     return render(request, 'shop/merchant/add_product.html', {'form': form, 'max_gallery': 5})

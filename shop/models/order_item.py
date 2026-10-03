@@ -14,6 +14,10 @@ class OrderItem(django.db.models.Model):
     product = django.db.models.ForeignKey(Product, on_delete=django.db.models.CASCADE, verbose_name="المنتج")
     price = django.db.models.DecimalField(max_digits=10, decimal_places=2, verbose_name="السعر")
     quantity = django.db.models.PositiveIntegerField(default=1, verbose_name="الكمية")
+    # نسخة ثابتة من رقم متجر المورد وقت إنشاء الطلب (داخلي للتاجر فقط)
+    supplier_store_number = django.db.models.CharField(
+        max_length=100, blank=True, default="", verbose_name="رقم متجر المورد"
+    )
 
     class Meta:
         verbose_name = "عنصر الطلب"

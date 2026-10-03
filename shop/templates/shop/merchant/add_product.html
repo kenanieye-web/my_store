@@ -39,6 +39,12 @@
                             {{ form.brand }}
                             {% if form.brand.errors %}<div class="text-danger small">{{ form.brand.errors }}</div>{% endif %}
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ form.supplier_store_number.label }}:</label>
+                            {{ form.supplier_store_number }}
+                            <div class="form-text">{{ form.supplier_store_number.help_text }}</div>
+                            {% if form.supplier_store_number.errors %}<div class="text-danger small">{{ form.supplier_store_number.errors }}</div>{% endif %}
+                        </div>
                     </div>
 
                     <!-- التصنيف (بأي عمق) + زر إضافة تصنيف -->
